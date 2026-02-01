@@ -28,6 +28,6 @@
   # Sudo
   security.sudo.wheelNeedsPassword = false;
 
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.11";
   system.configurationRevision = self.rev or self.dirtyRev or null;
 }
