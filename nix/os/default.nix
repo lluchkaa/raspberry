@@ -1,13 +1,13 @@
 { self, username, system, ... }:
 {
   imports = [
-    ./hardware
-    ./networking
-    ./k3s
-    ./secrets
-    ./nix
+    ./hardware.nix
+    ./networking.nix
+    ./k3s.nix
+    ./secrets.nix
+    ./nix.nix
     ./pkgs
-    ./user
+    ./user.nix
   ];
 
   # System
