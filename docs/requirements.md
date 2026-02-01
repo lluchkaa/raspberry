@@ -52,12 +52,18 @@
 .
 ├── flake.nix                  # Nix flake entry point
 ├── flake.lock
-├── nixos/
-│   ├── configuration.nix      # Main NixOS config
-│   ├── hardware.nix           # Pi hardware specifics
-│   ├── networking.nix         # Static IP, firewall
-│   ├── k3s.nix                # k3s service config
-│   └── secrets.nix            # sops-nix integration
+├── nix/
+│   ├── lib/
+│   │   └── make.nix           # Curried system builder
+│   └── os/
+│       ├── default.nix        # Main NixOS config (imports all modules)
+│       ├── hardware.nix       # Pi hardware specifics
+│       ├── networking.nix     # Static IP, firewall
+│       ├── k3s.nix            # k3s service config
+│       ├── secrets.nix        # sops-nix integration
+│       ├── nix.nix            # Nix settings, cachix, GC
+│       ├── pkgs.nix           # System packages
+│       └── user.nix           # User account config
 ├── k8s/
 │   ├── pihole/                # PiHole Helm values
 │   ├── monitoring/            # Prometheus + Grafana Helm values
