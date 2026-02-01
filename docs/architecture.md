@@ -55,6 +55,14 @@ Curried system builder. First call provides flake-level context (`nixpkgs`, `inp
 - Alertmanager disabled (can enable later)
 - 5 GiB Prometheus storage, 7-day retention
 
+### OpenClaw
+- Personal AI assistant ([openclaw.ai](https://openclaw.ai/))
+- Docker image prebuilt and pushed to Docker Hub (`lluchkaa/openclaw`)
+- Deployed via Kustomize manifests in `k8s/openclaw/`
+- Gateway (18789) and bridge (18790) ports exposed as ClusterIP
+- 1 GiB persistent volume for config/workspace data
+- Gateway token stored in k8s Secret
+
 ### Custom Apps
 - `k8s/apps/` placeholder for future Helm charts
 
@@ -84,13 +92,15 @@ nix/
     k3s.nix                   # k3s service config
     secrets.nix               # sops-nix integration
     nix.nix                   # Nix settings, cachix, GC
-    pkgs.nix                  # System packages
+    pkgs/
+      default.nix             # System packages & programs.*.enable
     user.nix                  # User account config
 secrets/                      # Encrypted secret files (sops)
 .sops.yaml                    # Age key creation rules
 k8s/
   pihole/values.yaml          # PiHole Helm values
   monitoring/values.yaml      # kube-prometheus-stack Helm values
+  openclaw/                   # OpenClaw Kustomize manifests
   apps/                       # Future custom app charts
 scripts/
   install.sh                  # Remote NixOS install (nixos-anywhere)
@@ -125,3 +135,6 @@ docs/
 - [ ] Create `secrets/secrets.yaml` with sops-encrypted values
 - [ ] Verify network interface name (`end0`) matches actual Pi 5
 - [ ] Run `scripts/install.sh <pi-ip>` for first deployment via nixos-anywhere
+- [ ] Build and push OpenClaw image to Docker Hub (`lluchkaa/openclaw`)
+- [ ] Set real gateway token in `k8s/openclaw/secret.yaml`
+- [ ] Deploy OpenClaw: `kubectl apply -k k8s/openclaw/`

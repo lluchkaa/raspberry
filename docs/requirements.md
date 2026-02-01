@@ -28,9 +28,13 @@
 - Exposed on the Pi's static IP as the network DNS server
 - Persistent storage for config/query logs
 
+### OpenClaw
+- Personal AI assistant — deployed via Kustomize manifests
+- Docker image prebuilt and pushed to Docker Hub (`lluchkaa/openclaw`)
+
 ### Custom Images
-- Built and pushed to a container registry (GHCR or Docker Hub — TBD)
-- Deployed via Helm charts stored in this repo
+- Built and pushed to Docker Hub (`lluchkaa/`)
+- Deployed via manifests stored in this repo
 
 ## 5. Secrets Management
 

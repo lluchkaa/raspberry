@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw
+  namespace: openclaw
+  labels:
+    app: openclaw
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openclaw
+  template:
+    metadata:
+      labels:
+        app: openclaw
+    spec:
+      containers:
+        - name: gateway
+          image: lluchkaa/openclaw:latest
+          imagePullPolicy: Always
+          ports:
+            - name: gateway
+              containerPort: 18789
+            - name: bridge
+              containerPort: 18790
+          env:
+            - name: OPENCLAW_GATEWAY_BIND
+              value: "0.0.0.0"
+            - name: OPENCLAW_GATEWAY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: gateway-token
+          volumeMounts:
+            - name: config
+              mountPath: /home/node/.openclaw
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: openclaw-config
