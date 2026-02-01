@@ -1,0 +1,7 @@
+keys:
+  - &raspberry age1a0k9qwvusmsp2czu3pw072sgpncql6p0vs6vqfpp7e74p53cupeq8kn0zz
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *raspberry

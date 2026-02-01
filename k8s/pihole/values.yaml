@@ -1,0 +1,43 @@
+# PiHole Helm chart values
+# Chart: https://github.com/MoJo2600/pihole-kubernetes
+
+replicaCount: 1
+
+serviceDns:
+  type: LoadBalancer
+  loadBalancerIP: "192.168.1.100"
+
+serviceWeb:
+  type: ClusterIP
+
+persistentVolumeClaim:
+  enabled: true
+  size: 1Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+adminPassword: "changeme" # TODO: Use a Kubernetes secret instead
+
+DNS1: "1.1.1.1"
+DNS2: "8.8.8.8"
+
+monitoring:
+  sidecar:
+    enabled: true
+    port: 9617
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 50m
+        memory: 64Mi
+
+  podMonitor:
+    enabled: true
