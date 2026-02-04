@@ -1,5 +1,9 @@
 result
 result-*
-*.age.key
-*.age.txt
-key.txt
+
+# K8s secrets (apply manually, don't commit)
+k8s/**/secret.yaml
+
+# NixOS secrets (copy to Pi manually, don't commit)
+secrets/*
+!secrets/*.example

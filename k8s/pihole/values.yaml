@@ -22,10 +22,42 @@ resources:
     cpu: 500m
     memory: 256Mi
 
-adminPassword: "changeme" # TODO: Use a Kubernetes secret instead
+# Admin password from existing secret
+admin:
+  existingSecret: pihole-admin
+  passwordKey: password
 
 DNS1: "1.1.1.1"
 DNS2: "8.8.8.8"
+
+# Blocklists - loaded on startup
+adlists:
+  - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+  - https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
+  - https://adaway.org/hosts.txt
+
+# Local DNS records - your internal services
+dnsmasq:
+  customDnsEntries:
+    - address=/raspberry.home/192.168.1.100
+
+  # Forward local domain queries to your router
+  customSettings:
+    - rev-server=192.168.1.0/24,192.168.1.1
+
+# Domains to never block
+whitelist:
+  - clients4.google.com
+  - clients2.google.com
+
+# Extra PiHole settings
+extraEnvVars:
+  - name: DNSMASQ_LISTENING
+    value: "all"
+  - name: DNSSEC
+    value: "true"
+  - name: QUERY_LOGGING
+    value: "true"
 
 monitoring:
   sidecar:

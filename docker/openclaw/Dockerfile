@@ -1,37 +1,19 @@
-FROM node:22-bookworm
+FROM node:krypton-slim
 
-# Install Bun (required for build scripts)
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-RUN corepack enable
+ENV PNPM_HOME=/usr/local/share/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN pnpm add -g openclaw
 
-WORKDIR /app
-
-ARG OPENCLAW_DOCKER_APT_PACKAGES=""
-RUN if [ -n "$OPENCLAW_DOCKER_APT_PACKAGES" ]; then \
-      apt-get update && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $OPENCLAW_DOCKER_APT_PACKAGES && \
-      apt-get clean && \
-      rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*; \
-    fi
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-COPY ui/package.json ./ui/package.json
-COPY patches ./patches
-COPY scripts ./scripts
-
-RUN pnpm install --frozen-lockfile
-
-COPY . .
-RUN OPENCLAW_A2UI_SKIP_MISSING=1 pnpm build
-# Force pnpm for UI build (Bun may fail on ARM/Synology architectures)
-ENV OPENCLAW_PREFER_PNPM=1
-RUN pnpm ui:build
-
-ENV NODE_ENV=production
-
-# Security hardening: Run as non-root user
+RUN useradd -m -s /bin/bash node || true
 USER node
+WORKDIR /home/node
 
-CMD ["node", "dist/index.js"]
+RUN mkdir -p /home/node/.openclaw
+
+EXPOSE 18789 18790
+
+ENTRYPOINT ["openclaw"]
+CMD ["gateway"]

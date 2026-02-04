@@ -32,9 +32,22 @@ spec:
                 secretKeyRef:
                   name: openclaw-secrets
                   key: gateway-token
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: gemini-api-key
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-secrets
+                  key: telegram-bot-token
           volumeMounts:
-            - name: config
+            - name: data
               mountPath: /home/node/.openclaw
+            - name: config
+              mountPath: /home/node/.openclaw/config.json5
+              subPath: config.json5
           resources:
             requests:
               memory: "256Mi"
@@ -43,6 +56,9 @@ spec:
               memory: "512Mi"
               cpu: "500m"
       volumes:
-        - name: config
+        - name: data
           persistentVolumeClaim:
             claimName: openclaw-config
+        - name: config
+          configMap:
+            name: openclaw-config
