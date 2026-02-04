@@ -1,9 +1,8 @@
-# Raspberry Pi Home Manager deployment
+# Raspberry Pi NixOS deployment
 #
 # Usage:
-#   make install    - Install Nix on the Pi
-#   make deploy     - Deploy Home Manager config
-#   make switch     - Apply config on already-synced repo
+#   make deploy     - Deploy NixOS config to Pi
+#   make switch     - Apply NixOS config on already-synced repo
 
 ADDR ?= 192.168.0.101
 PORT ?= 22
@@ -11,25 +10,13 @@ REMOTE_USER ?= ll-raspberry
 
 SSH_OPTIONS = -o PubkeyAuthentication=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
 SSH = ssh $(SSH_OPTIONS) -p$(PORT)
-NIX_CONFIG = experimental-features = nix-command flakes
 KUBECONFIG = /etc/rancher/k3s/k3s.yaml
 
 DOCKER_REPO ?= lluchkaa
 
-.PHONY: install deploy switch copy k8s k8s-openclaw k8s-pihole k8s-monitoring docker-openclaw
+.PHONY: deploy switch copy helm-repos k8s k8s-openclaw k8s-pihole k8s-monitoring docker-openclaw
 
-# Install Nix on Raspberry Pi OS
-install:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
-		if command -v nix &> /dev/null; then \
-			echo "Nix is already installed"; \
-		else \
-			sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon \
-			echo "Nix installed. Log out and back in, then run: make deploy"; \
-		fi \
-	'
-
-# Sync repo and apply Home Manager config
+# Sync repo and apply NixOS config
 deploy: copy switch
 
 # Copy flake to remote
@@ -40,28 +27,32 @@ copy:
 		--exclude='.direnv' \
 		. $(REMOTE_USER)@$(ADDR):~/raspberry/
 
-# Apply Home Manager configuration
+# Apply NixOS configuration
 switch:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
-		cd ~/raspberry && \
-		NIX_CONFIG="$(NIX_CONFIG)" nix run home-manager -- switch --flake .#$(REMOTE_USER) \
-	'
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo nixos-rebuild switch --flake ~/raspberry#raspberry'
 
 # Kubernetes deployments
-k8s: k8s-openclaw k8s-pihole k8s-monitoring
+k8s: k8s-openclaw k8s-monitoring k8s-pihole
+
+helm-repos:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		helm repo add mojo2600 https://mojo2600.github.io/pihole-kubernetes/ 2>/dev/null || true && \
+		helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 2>/dev/null || true && \
+		helm repo update \
+	'
 
 k8s-openclaw: copy
 	$(SSH) $(REMOTE_USER)@$(ADDR) 'KUBECONFIG=$(KUBECONFIG) kubectl apply -k ~/raspberry/k8s/openclaw'
 
-k8s-pihole: copy
+k8s-pihole: copy helm-repos
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
-		KUBECONFIG=$(KUBECONFIG) kubectl apply -k ~/raspberry/k8s/pihole && \
 		KUBECONFIG=$(KUBECONFIG) helm upgrade --install pihole mojo2600/pihole \
 			--namespace pihole --create-namespace \
-			-f ~/raspberry/k8s/pihole/values.yaml \
+			-f ~/raspberry/k8s/pihole/values.yaml && \
+		KUBECONFIG=$(KUBECONFIG) kubectl apply -k ~/raspberry/k8s/pihole \
 	'
 
-k8s-monitoring: copy
+k8s-monitoring: copy helm-repos
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		KUBECONFIG=$(KUBECONFIG) helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
 			--namespace monitoring --create-namespace \

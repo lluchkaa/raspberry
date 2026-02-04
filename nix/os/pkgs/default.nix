@@ -31,7 +31,7 @@
     pkgs.gcc
     pkgs.cachix
     pkgs.kubectl
-    pkgs.helm
+    pkgs.kubernetes-helm
     pkgs.k9s
   ];
 }

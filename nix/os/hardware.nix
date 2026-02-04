@@ -1,8 +1,12 @@
 { config, lib, pkgs, ... }:
 
 {
-  # Boot configuration is handled by nixos-raspberrypi modules
-  # (raspberry-pi-5.base configures the bootloader automatically)
+  # Enable cgroup memory for k3s/containers
+  boot.kernelParams = [
+    "cgroup_enable=cpuset"
+    "cgroup_enable=memory"
+    "cgroup_memory=1"
+  ];
 
   # Filesystem mounts
   fileSystems = {

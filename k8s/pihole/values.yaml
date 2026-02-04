@@ -52,12 +52,9 @@ whitelist:
 
 # Extra PiHole settings
 extraEnvVars:
-  - name: DNSMASQ_LISTENING
-    value: "all"
-  - name: DNSSEC
-    value: "true"
-  - name: QUERY_LOGGING
-    value: "true"
+  DNSMASQ_LISTENING: "all"
+  DNSSEC: "true"
+  QUERY_LOGGING: "true"
 
 monitoring:
   sidecar:
