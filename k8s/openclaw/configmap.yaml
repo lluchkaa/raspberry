@@ -4,45 +4,53 @@ metadata:
   name: openclaw-config
   namespace: openclaw
 data:
-  config.json5: |
+  openclaw.json: |
     {
-      identity: {
-        name: "Clawd",
-        theme: "helpful assistant",
-        emoji: "🦞"
-      },
-      agent: {
-        workspace: "/home/node/.openclaw/workspace",
-        model: {
-          primary: "google/gemini-2.0-flash",
-          fallbacks: ["google/gemini-1.5-flash"]
-        }
-      },
-      auth: {
-        profiles: {
-          "gemini:api": {
-            provider: "google",
-            mode: "api_key",
-            apiKey: "${GEMINI_API_KEY}"
+      "agents": {
+        "defaults": {
+          "workspace": "/home/node/.openclaw/workspace",
+          "model": {
+            "primary": "google/gemini-3-flash-preview",
+            "fallbacks": ["google/gemini-2.0-flash"]
           }
         },
-        order: {
-          google: ["gemini:api"]
+        "list": [
+          {
+            "id": "main",
+            "identity": {
+              "name": "Clawd",
+              "theme": "helpful assistant",
+              "emoji": "🦞"
+            }
+          }
+        ]
+      },
+      "auth": {
+        "profiles": {
+          "gemini:api": {
+            "provider": "google",
+            "mode": "api_key"
+          }
+        },
+        "order": {
+          "google": ["gemini:api"]
         }
       },
-      env: {
-        shellEnv: { enabled: true }
-      },
-      channels: {
-        telegram: {
-          dm: { policy: "pairing" },
-          botToken: "${TELEGRAM_BOT_TOKEN}",
-          allowFrom: ["803653603"]
+      "channels": {
+        "telegram": {
+          "enabled": true,
+          "botToken": "${TELEGRAM_BOT_TOKEN}",
+          "dmPolicy": "pairing",
+          "allowFrom": ["803653603", "401006345", "363003388"]
         }
       },
-      gateway: {
-        bind: "0.0.0.0",
-        port: 18789,
-        token: "${OPENCLAW_GATEWAY_TOKEN}"
+      "gateway": {
+        "mode": "local",
+        "bind": "lan",
+        "port": 18789,
+        "auth": {
+          "mode": "token",
+          "token": "${OPENCLAW_GATEWAY_TOKEN}"
+        }
       }
     }

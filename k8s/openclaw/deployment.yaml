@@ -15,18 +15,30 @@ spec:
       labels:
         app: openclaw
     spec:
+      initContainers:
+        - name: copy-config
+          image: busybox
+          command: ['sh', '-c', 'cp /config/openclaw.json /data/openclaw.json && chown 1000:1000 /data/openclaw.json && chmod 600 /data/openclaw.json']
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
       containers:
         - name: gateway
           image: lluchkaa/openclaw:latest
           imagePullPolicy: Always
+          command: ["openclaw", "gateway", "--bind", "lan", "--verbose"]
           ports:
             - name: gateway
               containerPort: 18789
             - name: bridge
               containerPort: 18790
           env:
+            - name: NODE_OPTIONS
+              value: "--max-old-space-size=3072"
             - name: OPENCLAW_GATEWAY_BIND
-              value: "0.0.0.0"
+              value: "lan"
             - name: OPENCLAW_GATEWAY_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -45,16 +57,13 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /home/node/.openclaw
-            - name: config
-              mountPath: /home/node/.openclaw/config.json5
-              subPath: config.json5
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: "1Gi"
+              cpu: "200m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "4Gi"
+              cpu: "2000m"
       volumes:
         - name: data
           persistentVolumeClaim:
