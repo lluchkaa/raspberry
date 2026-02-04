@@ -1,22 +1,32 @@
 { config, lib, pkgs, ... }:
 
 {
-  # Boot configuration (U-Boot / extlinux for Pi 5)
-  boot.loader = {
-    grub.enable = false;
-    generic-extlinux-compatible.enable = true;
-  };
-
-  # Hardware settings handled by nixos-hardware.raspberry-pi-5 module
-  # (kernel, firmware, device tree, GPU)
+  # Boot configuration is handled by nixos-raspberrypi modules
+  # (raspberry-pi-5.base configures the bootloader automatically)
 
   # Filesystem mounts
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/NIXOS_SD";
-    fsType = "ext4";
+  fileSystems = {
+    # Firmware partition (managed by nixos-raspberrypi bootloader)
+    "/boot/firmware" = {
+      device = "/dev/disk/by-label/FIRMWARE";
+      fsType = "vfat";
+      options = [
+        "noatime"
+        "noauto"
+        "x-systemd.automount"
+        "x-systemd.idle-timeout=1min"
+      ];
+    };
+
+    # Root filesystem
+    "/" = {
+      device = "/dev/disk/by-label/NIXOS_SD";
+      fsType = "ext4";
+      options = [ "noatime" ];
+    };
   };
 
-  # Swap (optional, useful on a Pi with limited RAM)
+  # Swap (useful on Pi with limited RAM)
   swapDevices = [{
     device = "/swapfile";
     size = 2048; # MB

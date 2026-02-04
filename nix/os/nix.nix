@@ -1,44 +1,20 @@
+{ username, ... }:
 {
-  username,
-  pkgs,
-  ...
-}:
-{
-  nix = {
-    package = pkgs.nixVersions.latest;
-    extraOptions = ''
-      keep-outputs = true
-      keep-derivations = true
-    '';
-
-    settings = {
-      trusted-users = [
-        "root"
-        "@admin"
-        username
-      ];
-
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-
-      substituters = [
-        "https://nix-community.cachix.org"
-        "https://lluchkaa.cachix.org"
-      ];
-      trusted-public-keys = [
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        "lluchkaa.cachix.org-1:OZsJHkBMAfwSUm1gHwqKMA/iaLiyRuC9X90Bp+kX7UI="
-      ];
-      builders-use-substitutes = true;
-    };
-
-    gc = {
-      automatic = true;
-      options = "--delete-older-than 7d";
-    };
+  nix.settings = {
+    trusted-users = [ "root" username ];
+    experimental-features = [ "nix-command" "flakes" ];
+    substituters = [
+      "https://nixos-raspberrypi.cachix.org"
+      "https://nix-community.cachix.org"
+    ];
+    trusted-public-keys = [
+      "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
   };
 
-  nixpkgs.config.allowUnfree = true;
+  nix.gc = {
+    automatic = true;
+    options = "--delete-older-than 7d";
+  };
 }
