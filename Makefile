@@ -3,6 +3,7 @@
 # Usage:
 #   make deploy     - Deploy NixOS config to Pi
 #   make switch     - Apply NixOS config on already-synced repo
+#   make k8s        - Deploy all k8s workloads (openclaw, monitoring, pihole)
 
 ADDR ?= 192.168.0.101
 PORT ?= 22
@@ -42,7 +43,10 @@ helm-repos:
 	'
 
 k8s-openclaw: copy
-	$(SSH) $(REMOTE_USER)@$(ADDR) 'KUBECONFIG=$(KUBECONFIG) kubectl apply -k ~/raspberry/k8s/openclaw'
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		KUBECONFIG=$(KUBECONFIG) kubectl apply -k ~/raspberry/k8s/openclaw && \
+		KUBECONFIG=$(KUBECONFIG) kubectl rollout restart -n openclaw deploy/openclaw \
+	'
 
 k8s-pihole: copy helm-repos
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
