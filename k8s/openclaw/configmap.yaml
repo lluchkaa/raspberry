@@ -12,7 +12,8 @@ data:
           "model": {
             "primary": "google/gemini-3-flash-preview",
             "fallbacks": ["google/gemini-2.0-flash"]
-          }
+          },
+          "bootstrapMaxChars": 5000
         },
         "list": [
           {
@@ -43,6 +44,9 @@ data:
           "dmPolicy": "pairing",
           "allowFrom": ["803653603", "401006345", "363003388"]
         }
+      },
+      "messages": {
+        "responsePrefix": "🤓"
       },
       "gateway": {
         "mode": "local",

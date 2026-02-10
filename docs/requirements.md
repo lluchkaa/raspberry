@@ -3,86 +3,79 @@
 ## 1. NixOS System Configuration
 
 - Declarative NixOS config managed via **Nix Flakes**
-- Pi-specific hardware config (boot, firmware, ARM64)
-- Static IP assignment for reliable DNS (PiHole)
-- Firewall rules (SSH, DNS, HTTP/HTTPS, K8s API)
+- Pi-specific hardware config (boot, firmware, ARM64) via `nixos-raspberrypi`
+- DHCP networking with firewall rules (SSH, DNS, HTTP/HTTPS, K8s API)
 - User accounts and SSH authorized keys
 
-## 2. Remote Deployment
+## 2. Deployment
 
-- Install NixOS on the Pi over SSH (nixos-anywhere or custom script)
-- Rebuild/redeploy NixOS config remotely (`nixos-rebuild switch --target-host`)
+- Build NixOS SD image via Docker (`scripts/build-image.sh`)
+- Deploy NixOS config to Pi via rsync + `nixos-rebuild switch` (`make deploy`)
+- Deploy k8s workloads via `make k8s` (Helm and Kustomize)
 - Rollback support (built into NixOS generations)
 
 ## 3. Kubernetes (k3s)
 
 - **k3s** single-node cluster provisioned via NixOS module
-- Traefik ingress (ships with k3s) for service access
+- Traefik disabled — services exposed directly via LoadBalancer/ClusterIP
 - Local-path-provisioner for persistent volumes (SD card storage)
-- Helm as the package manager for workloads
+- Helm and Kustomize for workload management
 
 ## 4. Workloads
 
 ### PiHole
-- Deployed via Helm chart
-- Exposed on the Pi's static IP as the network DNS server
+- Deployed via Helm chart (`mojo2600/pihole`)
+- Exposed on the Pi's IP as the network DNS server (LoadBalancer)
 - Persistent storage for config/query logs
+- Prometheus exporter sidecar for metrics
 
 ### OpenClaw
 - Personal AI assistant — deployed via Kustomize manifests
 - Docker image prebuilt and pushed to Docker Hub (`lluchkaa/openclaw`)
+- Gateway and bridge ports exposed as ClusterIP
 
-### Custom Images
-- Built and pushed to Docker Hub (`lluchkaa/`)
-- Deployed via manifests stored in this repo
-
-## 5. Secrets Management
-
-- **sops-nix** for NixOS-level secrets (SSH keys, passwords)
-- **sealed-secrets** or **SOPS with Flux/Helm** for Kubernetes secrets
-- Age or GPG key for encryption; public key committed, private key stays on Pi
-
-## 6. Monitoring
-
+### Monitoring
 - Lightweight stack suitable for single-Pi resources
 - **Prometheus** (metrics collection) + **Grafana** (dashboards)
-- Deployed via Helm charts
+- Deployed via Helm chart (`kube-prometheus-stack`)
 - Key metrics: CPU, memory, disk, pod health, DNS query rates (PiHole)
-- Alerts optional (can add later)
 
-## 7. Repo Structure (proposed)
+## 5. Repo Structure
 
 ```
 .
 ├── flake.nix                  # Nix flake entry point
 ├── flake.lock
+├── Makefile                   # Deployment & k8s targets
 ├── nix/
-│   ├── lib/
-│   │   └── make.nix           # Curried system builder
 │   └── os/
 │       ├── default.nix        # Main NixOS config (imports all modules)
 │       ├── hardware.nix       # Pi hardware specifics
-│       ├── networking.nix     # Static IP, firewall
+│       ├── networking.nix     # DHCP, firewall
 │       ├── k3s.nix            # k3s service config
-│       ├── secrets.nix        # sops-nix integration
 │       ├── nix.nix            # Nix settings, cachix, GC
-│       ├── pkgs.nix           # System packages
+│       ├── pkgs/
+│       │   └── default.nix    # System packages
 │       └── user.nix           # User account config
 ├── k8s/
-│   ├── pihole/                # PiHole Helm values
-│   ├── monitoring/            # Prometheus + Grafana Helm values
-│   └── apps/                  # Custom app Helm values
+│   ├── openclaw/              # OpenClaw Kustomize manifests
+│   ├── pihole/                # PiHole Helm values + secret
+│   └── monitoring/            # kube-prometheus-stack Helm values
+├── docker/
+│   └── openclaw/              # Dockerfile & build script
 ├── scripts/
-│   ├── install.sh             # Remote NixOS install via SSH
-│   └── deploy.sh              # Remote NixOS rebuild
+│   └── build-image.sh         # Docker-based NixOS SD image builder
+├── secrets/
+│   └── wireless-env           # WiFi credentials
 └── docs/
-    └── requirements.md        # This file
+    ├── requirements.md        # This file
+    └── architecture.md        # Architecture decisions
 ```
 
-## 8. Out of Scope (for now)
+## 6. Out of Scope (for now)
 
 - Multi-node cluster
 - USB SSD / advanced storage
 - Automated backups
-- GitOps (Flux/ArgoCD) — using Helm directly for now
+- GitOps (Flux/ArgoCD) — using Helm/Kustomize directly for now
 - CI/CD pipeline

@@ -8,10 +8,10 @@ Infrastructure-as-code repository for a **Raspberry Pi 5** (aarch64-linux) runni
 
 Key goals:
 - NixOS configuration managed via flakes
-- Remote NixOS installation/deployment over SSH (nixos-anywhere)
+- Deployment via rsync + `nixos-rebuild switch` (Makefile targets)
 - Kubernetes (k3s) single-node cluster
-- Workloads: PiHole, monitoring (Prometheus + Grafana), custom container images
-- Secrets via sops-nix with Age encryption
+- Workloads: PiHole, monitoring (Prometheus + Grafana), OpenClaw AI assistant
+- Docker image builds for custom workloads (pushed to Docker Hub)
 
 ## Version Control
 
@@ -19,16 +19,17 @@ Uses both **Git** and **Jujutsu (jj)** for version control. The repo is hosted a
 
 ## Key Conventions
 
-- **`nix/lib/make.nix`**: Curried system builder — do not add host directories, there is only one host
+- **Flake input**: `nixos-raspberrypi` (nvmd fork) — sole input, provides nixpkgs and Pi-specific modules
+- **System builder**: `nixos-raspberrypi.lib.nixosSystemFull` called directly in `flake.nix` — no wrapper; there is only one host
 - **Username**: `ll-raspberry` (not `lluchkaa` — that's the workstation user)
-- **Nixpkgs**: `nixos-unstable` — all flake inputs follow nixpkgs
 - **Module structure**: Flat `nix/os/*.nix` files — no `core/`+`optional/` hierarchy
 - **No home-manager, no overlays, no desktop tools** — this is a minimal server
 - **Packages**: Keep minimal — only what the server needs
-- **SSH**: Hardened — no password auth, no root login
-- **Secrets**: Age keys via sops-nix, private key at `/var/lib/sops-nix/key.txt` on Pi
-- **Deployment**: Shell scripts in `scripts/`, not Makefile
+- **SSH**: Root login disabled; key-based auth configured
+- **Deployment**: `make deploy` (rsync to Pi + nixos-rebuild switch); `make k8s` for workloads
+- **K8s manifests**: `k8s/` — Kustomize for OpenClaw, Helm values for PiHole and monitoring
+- **Docker builds**: `docker/openclaw/` — custom image pushed to `lluchkaa/openclaw`
 
 ## Status
 
-Project skeleton is complete. Flake checks pass. SSH key and Age key are configured. Ready for first deployment via nixos-anywhere.
+NixOS config, k8s manifests, and deployment tooling are functional.
