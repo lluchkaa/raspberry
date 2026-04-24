@@ -10,8 +10,7 @@ Key goals:
 - NixOS configuration managed via flakes
 - Deployment via rsync + `nixos-rebuild switch` (Makefile targets)
 - Kubernetes (k3s) single-node cluster
-- Workloads: PiHole, monitoring (Prometheus + Grafana), OpenClaw AI assistant
-- Docker image builds for custom workloads (pushed to Docker Hub)
+- Workloads: PiHole, monitoring (Prometheus + Grafana)
 
 ## Version Control
 
@@ -27,8 +26,7 @@ Uses both **Git** and **Jujutsu (jj)** for version control. The repo is hosted a
 - **Packages**: Keep minimal — only what the server needs
 - **SSH**: Root login disabled; key-based auth configured
 - **Deployment**: `make deploy` (rsync to Pi + nixos-rebuild switch); `make k8s` for workloads
-- **K8s manifests**: `k8s/` — Kustomize for OpenClaw, Helm values for PiHole and monitoring
-- **Docker builds**: `docker/openclaw/` — custom image pushed to `lluchkaa/openclaw`
+- **K8s manifests**: `k8s/` — Helm values for PiHole and monitoring
 
 ## Status
 

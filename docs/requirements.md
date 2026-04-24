@@ -29,11 +29,6 @@
 - Persistent storage for config/query logs
 - Prometheus exporter sidecar for metrics
 
-### OpenClaw
-- Personal AI assistant — deployed via Kustomize manifests
-- Docker image prebuilt and pushed to Docker Hub (`lluchkaa/openclaw`)
-- Gateway and bridge ports exposed as ClusterIP
-
 ### Monitoring
 - Lightweight stack suitable for single-Pi resources
 - **Prometheus** (metrics collection) + **Grafana** (dashboards)
@@ -58,11 +53,8 @@
 │       │   └── default.nix    # System packages
 │       └── user.nix           # User account config
 ├── k8s/
-│   ├── openclaw/              # OpenClaw Kustomize manifests
 │   ├── pihole/                # PiHole Helm values + secret
 │   └── monitoring/            # kube-prometheus-stack Helm values
-├── docker/
-│   └── openclaw/              # Dockerfile & build script
 ├── scripts/
 │   └── build-image.sh         # Docker-based NixOS SD image builder
 ├── secrets/

@@ -53,20 +53,11 @@ Raspberry Pi 5, aarch64-linux.
 - Alertmanager disabled (can enable later)
 - 5 GiB Prometheus storage, 7-day retention
 
-### OpenClaw
-- Personal AI assistant ([openclaw.ai](https://openclaw.ai/))
-- Docker image prebuilt and pushed to Docker Hub (`lluchkaa/openclaw`)
-- Deployed via Kustomize manifests in `k8s/openclaw/`
-- Gateway (18789) and bridge (18790) ports exposed as ClusterIP
-- 1 GiB persistent volume for config/workspace data
-- Gateway token stored in k8s Secret
-
 ## Deployment
 
 - **NixOS config**: `make deploy` — rsync repo to Pi, then `nixos-rebuild switch`
-- **K8s workloads**: `make k8s` — deploys OpenClaw (Kustomize), PiHole (Helm), monitoring (Helm)
+- **K8s workloads**: `make k8s` — deploys PiHole (Helm), monitoring (Helm)
 - **SD image build**: `scripts/build-image.sh` — Docker-based NixOS SD image builder
-- **Docker builds**: `make docker-openclaw` — build and push OpenClaw image
 - **Rollback**: Built-in NixOS generations
 
 ## Repo Structure
@@ -85,11 +76,8 @@ nix/
       default.nix             # System packages & programs.*.enable
     user.nix                  # User account config
 k8s/
-  openclaw/                   # OpenClaw Kustomize manifests
   pihole/                     # PiHole Helm values + secret
   monitoring/                 # kube-prometheus-stack Helm values
-docker/
-  openclaw/                   # Dockerfile & build script
 scripts/
   build-image.sh              # Docker-based NixOS SD image builder
 secrets/

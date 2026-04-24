@@ -3,7 +3,7 @@
 # Usage:
 #   make deploy     - Deploy NixOS config to Pi
 #   make switch     - Apply NixOS config on already-synced repo
-#   make k8s        - Deploy all k8s workloads (openclaw, monitoring, pihole)
+#   make k8s        - Deploy all k8s workloads (monitoring, pihole)
 
 ADDR ?= 192.168.0.101
 PORT ?= 22
@@ -15,7 +15,7 @@ KUBECONFIG = /etc/rancher/k3s/k3s.yaml
 
 DOCKER_REPO ?= lluchkaa
 
-.PHONY: deploy switch copy helm-repos k8s k8s-openclaw k8s-pihole k8s-monitoring docker-openclaw
+.PHONY: deploy switch copy helm-repos k8s k8s-pihole k8s-monitoring
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -30,22 +30,16 @@ copy:
 
 # Apply NixOS configuration
 switch:
-	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo nixos-rebuild switch --flake ~/raspberry#raspberry'
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo nixos-rebuild switch --flake ~/raspberry#raspberry --accept-flake-config'
 
 # Kubernetes deployments
-k8s: k8s-openclaw k8s-monitoring k8s-pihole
+k8s: k8s-monitoring k8s-pihole
 
 helm-repos:
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		helm repo add mojo2600 https://mojo2600.github.io/pihole-kubernetes/ 2>/dev/null || true && \
 		helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 2>/dev/null || true && \
 		helm repo update \
-	'
-
-k8s-openclaw: copy
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
-		KUBECONFIG=$(KUBECONFIG) kubectl apply -k ~/raspberry/k8s/openclaw && \
-		KUBECONFIG=$(KUBECONFIG) kubectl rollout restart -n openclaw deploy/openclaw \
 	'
 
 k8s-pihole: copy helm-repos
@@ -62,8 +56,3 @@ k8s-monitoring: copy helm-repos
 			--namespace monitoring --create-namespace \
 			-f ~/raspberry/k8s/monitoring/values.yaml \
 	'
-
-# Docker builds
-docker-openclaw:
-	docker build -t $(DOCKER_REPO)/openclaw:latest docker/openclaw
-	docker push $(DOCKER_REPO)/openclaw:latest
