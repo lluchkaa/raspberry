@@ -21,7 +21,10 @@ GITHUB_OWNER   ?= lluchkaa
 GITHUB_REPO    ?= raspberry
 PIHOLE_PASSWORD ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret
+GRAFANA_USERNAME ?= admin
+GRAFANA_PASSWORD ?= CHANGE_ME
+
+.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -45,6 +48,15 @@ pihole-secret:
 		kubectl create namespace pihole --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic pihole-admin -n pihole \
 			--from-literal=password=$(PIHOLE_PASSWORD) \
+			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+grafana-secret:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic grafana-admin -n monitoring \
+			--from-literal=username=$(GRAFANA_USERNAME) \
+			--from-literal=password=$(GRAFANA_PASSWORD) \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 

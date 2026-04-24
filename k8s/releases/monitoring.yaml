@@ -36,6 +36,10 @@ spec:
 
     grafana:
       enabled: true
+      admin:
+        existingSecret: grafana-admin
+        userKey: username
+        passwordKey: password
       resources:
         requests:
           cpu: 50m
