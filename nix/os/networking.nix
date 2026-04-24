@@ -12,6 +12,9 @@
         80    # HTTP
         443   # HTTPS
         6443  # K8s API
+        3000  # Grafana
+        8080  # Traefik
+        8081  # PiHole admin
       ];
       allowedUDPPorts = [
         53    # DNS (PiHole)

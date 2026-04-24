@@ -7,10 +7,10 @@ spec:
   valuesContent: |-
     ports:
       pihole:
-        port: 8080
+        port: 8081
         expose:
           default: true
-        exposedPort: 8080
+        exposedPort: 8081
         protocol: TCP
       grafana:
         port: 3000
