@@ -13,4 +13,12 @@
     "net.ipv4.ip_forward" = 1;
     "net.ipv6.conf.all.forwarding" = 1;
   };
+
+  environment.variables = {
+    KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+  };
+
+  security.sudo.extraConfig = ''
+    Defaults env_keep += "KUBECONFIG"
+  '';
 }

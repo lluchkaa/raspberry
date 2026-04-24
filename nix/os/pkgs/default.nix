@@ -33,5 +33,6 @@
     pkgs.kubectl
     pkgs.kubernetes-helm
     pkgs.k9s
+    pkgs.fluxcd
   ];
 }
