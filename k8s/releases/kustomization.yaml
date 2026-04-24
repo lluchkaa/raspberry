@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - pihole.yaml
   - monitoring.yaml
+  - traefik-config.yaml
