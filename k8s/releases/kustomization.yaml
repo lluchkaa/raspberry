@@ -8,3 +8,4 @@ resources:
   - postgresql.yaml
   - temporal.yaml
   - capacitor.yaml
+  - routes.yaml
