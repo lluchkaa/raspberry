@@ -1,17 +1,24 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: traefik
   namespace: kube-system
 spec:
   interval: 1h
+  install:
+    timeout: 15m
+    createNamespace: true
+  upgrade:
+    timeout: 15m
   chart:
     spec:
       chart: traefik
+      version: "32.x"
       sourceRef:
         kind: HelmRepository
         name: traefik
         namespace: flux-system
+      interval: 1h
   values:
     deployment:
       podAnnotations:
@@ -55,3 +62,63 @@ spec:
           default: true
         exposedPort: 9000
         protocol: TCP
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pihole-web
+  namespace: apps
+spec:
+  entryPoints:
+    - pihole
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: pihole-web
+          port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  entryPoints:
+    - grafana
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: monitoring-grafana
+          port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: temporal-web
+  namespace: apps
+spec:
+  entryPoints:
+    - temporal
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: temporal-web
+          port: 8080
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: capacitor
+  namespace: flux-system
+spec:
+  entryPoints:
+    - capacitor
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: capacitor
+          port: 9000
