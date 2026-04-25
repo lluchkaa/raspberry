@@ -67,12 +67,10 @@ grafana-secret:
 capacitor-next-secret:
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
-		kubectl create secret generic capacitor-next -n flux-system \
-			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
-			--dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic capacitor -n flux-system \
+			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
 			--from-literal=registry.yaml="" \
-			--dry-run=client -o yaml | kubectl apply -f - \
+			--dry-run=client -o yaml | kubectl apply -f -\
 	'
 
 secrets: pihole-secret grafana-secret temporal-db-secret capacitor-next-secret

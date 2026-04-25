@@ -25,7 +25,7 @@ spec:
       IMPERSONATE_SA_RULES: "noauth=flux-system:capacitor-next-preset-clusteradmin"
       AZURE_WORKLOAD_IDENTITY_ENABLED: "false"
     existingSecret:
-      name: capacitor-next
+      name: capacitor
     resources:
       requests:
         cpu: 50m
