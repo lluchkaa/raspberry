@@ -18,6 +18,12 @@ spec:
           default: true
         exposedPort: 3000
         protocol: TCP
+      temporal:
+        port: 8233
+        expose:
+          default: true
+        exposedPort: 8233
+        protocol: TCP
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -48,3 +54,18 @@ spec:
       services:
         - name: monitoring-grafana
           port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: temporal-web
+  namespace: temporal
+spec:
+  entryPoints:
+    - temporal
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: temporal-web
+          port: 8080

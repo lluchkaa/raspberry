@@ -1,0 +1,67 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: temporal
+  namespace: temporal
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: temporal
+      sourceRef:
+        kind: HelmRepository
+        name: temporal
+        namespace: flux-system
+      interval: 1h
+  install:
+    createNamespace: true
+  values:
+    server:
+      replicaCount: 1
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+
+    admintools:
+      enabled: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+    web:
+      enabled: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+    cassandra:
+      enabled: false
+
+    mysql:
+      enabled: false
+
+    elasticsearch:
+      enabled: false
+
+    postgresql:
+      enabled: true
+      primary:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi

@@ -4,3 +4,4 @@ resources:
   - pihole.yaml
   - monitoring.yaml
   - traefik-config.yaml
+  - temporal.yaml
