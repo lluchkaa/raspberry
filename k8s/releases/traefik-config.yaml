@@ -1,3 +1,41 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    logs:
+      access:
+        enabled: true
+      general:
+        level: DEBUG
+    ports:
+      pihole:
+        port: 8081
+        expose:
+          default: true
+        exposedPort: 8081
+        protocol: TCP
+      grafana:
+        port: 3000
+        expose:
+          default: true
+        exposedPort: 3000
+        protocol: TCP
+      temporal:
+        port: 8233
+        expose:
+          default: true
+        exposedPort: 8233
+        protocol: TCP
+      capacitor:
+        port: 9000
+        expose:
+          default: true
+        exposedPort: 9000
+        protocol: TCP
+---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
