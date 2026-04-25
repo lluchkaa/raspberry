@@ -32,7 +32,8 @@ spec:
         scripts:
           create_visibility_db.sh: |
             #!/bin/bash
-            psql -v ON_ERROR_STOP=1 --username postgres \
+            PGPASSWORD="$POSTGRESQL_POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 \
+              --username postgres \
               --command "CREATE DATABASE temporal_visibility OWNER temporal;"
       persistence:
         size: 5Gi
