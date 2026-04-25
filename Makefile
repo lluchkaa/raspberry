@@ -24,7 +24,7 @@ PIHOLE_PASSWORD ?= CHANGE_ME
 GRAFANA_USERNAME ?= admin
 GRAFANA_PASSWORD ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret
+.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret status
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -58,6 +58,16 @@ grafana-secret:
 			--from-literal=username=$(GRAFANA_USERNAME) \
 			--from-literal=password=$(GRAFANA_PASSWORD) \
 			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+# Show cluster status: Flux sync + all pods
+status:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		KUBECONFIG=$(KUBECONFIG) kubectl get helmrelease -A && \
+		echo "" && \
+		KUBECONFIG=$(KUBECONFIG) kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded 2>/dev/null || true && \
+		echo "" && \
+		KUBECONFIG=$(KUBECONFIG) kubectl get pods -A \
 	'
 
 # Bootstrap Flux (run once after initial deploy)
