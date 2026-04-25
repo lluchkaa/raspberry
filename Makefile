@@ -30,7 +30,7 @@ CAPACITOR_LICENSE_KEY ?= CHANGE_ME
 CAPACITOR_SESSION_HASH_KEY ?= CHANGE_ME
 CAPACITOR_SESSION_BLOCK_KEY ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret temporal-db-secret capacitor-next-secret secrets status k3s-reset
+.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret temporal-db-secret capacitor-next-secret secrets status k3s-reset reconcile
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -103,6 +103,13 @@ status:
 		KUBECONFIG=$(KUBECONFIG) kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded 2>/dev/null || true && \
 		echo "" && \
 		KUBECONFIG=$(KUBECONFIG) kubectl get pods -A \
+	'
+
+# Force Flux to reconcile immediately
+reconcile:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		KUBECONFIG=$(KUBECONFIG) \
+		flux reconcile kustomization flux-system --with-source \
 	'
 
 # Bootstrap Flux (run once after initial deploy)
