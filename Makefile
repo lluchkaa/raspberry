@@ -26,7 +26,9 @@ GRAFANA_PASSWORD ?= CHANGE_ME
 
 TEMPORAL_DB_PASSWORD ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret temporal-db-secret secrets status k3s-reset
+CAPACITOR_LICENSE_KEY ?= CHANGE_ME
+
+.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret temporal-db-secret capacitor-next-secret secrets status k3s-reset
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -62,7 +64,16 @@ grafana-secret:
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 
-secrets: pihole-secret grafana-secret temporal-db-secret
+capacitor-next-secret:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic capacitor-next -n flux-system \
+			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
+			--from-literal=registry.yaml="" \
+			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+secrets: pihole-secret grafana-secret temporal-db-secret capacitor-next-secret
 
 temporal-db-secret:
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \

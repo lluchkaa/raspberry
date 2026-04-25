@@ -46,7 +46,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: onechart
+      app.kubernetes.io/name: capacitor-next
   ingress:
     - from:
         - namespaceSelector:

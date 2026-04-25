@@ -1,13 +1,35 @@
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
 metadata:
   name: capacitor
   namespace: flux-system
 spec:
   interval: 1h
-  sourceRef:
-    kind: OCIRepository
-    name: capacitor
-  path: ./
-  prune: true
-  targetNamespace: flux-system
+  install:
+    timeout: 15m
+    createNamespace: true
+  upgrade:
+    timeout: 15m
+  chart:
+    spec:
+      chart: capacitor-next
+      sourceRef:
+        kind: HelmRepository
+        name: capacitor
+        namespace: flux-system
+      interval: 1h
+  values:
+    env:
+      LICENSE_KEY: ""
+      AUTH: noauth
+      IMPERSONATE_SA_RULES: "noauth=flux-system:capacitor-next-preset-clusteradmin"
+      AZURE_WORKLOAD_IDENTITY_ENABLED: "false"
+    existingSecret:
+      name: capacitor-next
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
