@@ -27,6 +27,8 @@ GRAFANA_PASSWORD ?= CHANGE_ME
 TEMPORAL_DB_PASSWORD ?= CHANGE_ME
 
 CAPACITOR_LICENSE_KEY ?= CHANGE_ME
+CAPACITOR_SESSION_HASH_KEY ?= CHANGE_ME
+CAPACITOR_SESSION_BLOCK_KEY ?= CHANGE_ME
 
 .PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret temporal-db-secret capacitor-next-secret secrets status k3s-reset
 
@@ -69,6 +71,8 @@ capacitor-next-secret:
 		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic capacitor -n flux-system \
 			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
+			--from-literal=SESSION_HASH_KEY=$(CAPACITOR_SESSION_HASH_KEY) \
+			--from-literal=SESSION_BLOCK_KEY=$(CAPACITOR_SESSION_BLOCK_KEY) \
 			--from-literal=registry.yaml="" \
 			--dry-run=client -o yaml | kubectl apply -f -\
 	'
@@ -87,7 +91,7 @@ temporal-db-secret:
 k3s-reset:
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		sudo systemctl stop k3s && \
-		sudo rm -rf /var/lib/rancher /etc/rancher && \
+		sudo rm -rf /var/lib/rancher /etc/rancher /var/lib/cni && \
 		sudo systemctl start k3s \
 	'
 

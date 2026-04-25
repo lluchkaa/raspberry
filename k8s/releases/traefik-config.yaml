@@ -53,7 +53,7 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: kube-system
       ports:
-        - port: 9000
+        - port: 8080
           protocol: TCP
   policyTypes:
     - Ingress
@@ -153,4 +153,4 @@ spec:
       kind: Rule
       services:
         - name: capacitor
-          port: 9000
+          port: 80
