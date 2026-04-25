@@ -9,16 +9,10 @@ Currently running the free OSS `capacitor` via OCIRepository + Kustomization.
 
 Email laszlo@gimlet.io and ask for a self-hosted license key.
 
-### 2. Create the RBAC resources
+### 2. (No RBAC step needed)
 
-Apply the manifests from the capacitor GitHub repo:
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/gimlet-io/capacitor/main/self-host/yaml/capacitor-next/sa.yaml
-kubectl apply -f https://raw.githubusercontent.com/gimlet-io/capacitor/main/self-host/yaml/capacitor-next/rbac-preset-clusteradmin.yaml
-kubectl apply -f https://raw.githubusercontent.com/gimlet-io/capacitor/main/self-host/yaml/capacitor-next/rbac-impersonator.yaml
-kubectl apply -f https://raw.githubusercontent.com/gimlet-io/capacitor/main/self-host/yaml/capacitor-next/service.yaml
-```
+The Helm chart creates the ServiceAccount and all RBAC resources automatically
+(`serviceAccount.create: true` in chart defaults).
 
 ### 3. Create the secret with LICENSE_KEY
 
