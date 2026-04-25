@@ -6,7 +6,10 @@ metadata:
 spec:
   interval: 1h
   install:
+    timeout: 15m
     createNamespace: true
+  upgrade:
+    timeout: 15m
   chart:
     spec:
       chart: capacitor-next
