@@ -5,12 +5,14 @@ metadata:
   namespace: apps
 spec:
   interval: 1h
+  install:
+    createNamespace: true
   chart:
     spec:
-      chart: capacitor
+      chart: capacitor-next
       sourceRef:
         kind: HelmRepository
-        name: gimlet
+        name: capacitor
         namespace: flux-system
       interval: 1h
   values:

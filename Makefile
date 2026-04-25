@@ -24,7 +24,9 @@ PIHOLE_PASSWORD ?= CHANGE_ME
 GRAFANA_USERNAME ?= admin
 GRAFANA_PASSWORD ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret status k3s-reset
+TEMPORAL_DB_PASSWORD ?= CHANGE_ME
+
+.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret temporal-db-secret secrets status k3s-reset
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -57,6 +59,16 @@ grafana-secret:
 		kubectl create secret generic grafana-admin -n monitoring \
 			--from-literal=username=$(GRAFANA_USERNAME) \
 			--from-literal=password=$(GRAFANA_PASSWORD) \
+			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+secrets: pihole-secret grafana-secret temporal-db-secret
+
+temporal-db-secret:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic temporal-db -n apps \
+			--from-literal=password=$(TEMPORAL_DB_PASSWORD) \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 

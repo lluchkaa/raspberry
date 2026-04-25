@@ -5,6 +5,9 @@ metadata:
   namespace: apps
 spec:
   interval: 1h
+  dependsOn:
+    - name: postgresql
+      namespace: apps
   chart:
     spec:
       chart: temporal
@@ -14,7 +17,10 @@ spec:
         namespace: flux-system
       interval: 1h
   install:
+    timeout: 15m
     createNamespace: true
+  upgrade:
+    timeout: 15m
   values:
     server:
       replicaCount: 1
@@ -25,6 +31,35 @@ spec:
         limits:
           cpu: 1000m
           memory: 1Gi
+      config:
+        persistence:
+          defaultStore: default
+          visibilityStore: visibility
+          datastores:
+            default:
+              sql:
+                pluginName: postgres12
+                databaseName: temporal
+                connectAddr: "postgresql:5432"
+                connectProtocol: tcp
+                user: temporal
+                existingSecret: temporal-db
+                secretKey: password
+                maxConns: 20
+                maxIdleConns: 20
+                connMaxLifetime: 1h
+            visibility:
+              sql:
+                pluginName: postgres12
+                databaseName: temporal_visibility
+                connectAddr: "postgresql:5432"
+                connectProtocol: tcp
+                user: temporal
+                existingSecret: temporal-db
+                secretKey: password
+                maxConns: 20
+                maxIdleConns: 20
+                connMaxLifetime: 1h
 
     admintools:
       enabled: true
@@ -45,23 +80,3 @@ spec:
         limits:
           cpu: 200m
           memory: 256Mi
-
-    cassandra:
-      enabled: false
-
-    mysql:
-      enabled: false
-
-    elasticsearch:
-      enabled: false
-
-    postgresql:
-      enabled: true
-      primary:
-        resources:
-          requests:
-            cpu: 100m
-            memory: 256Mi
-          limits:
-            cpu: 500m
-            memory: 512Mi

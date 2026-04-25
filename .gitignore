@@ -3,6 +3,9 @@ result-*
 output/
 
 *.local.*
+.env
+.envrc
+.env.*
 
 # K8s secrets (apply manually, don't commit)
 k8s/**/secret.yaml

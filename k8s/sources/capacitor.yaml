@@ -1,8 +1,9 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: gimlet
+  name: capacitor
   namespace: flux-system
 spec:
+  type: oci
   interval: 1h
-  url: https://helm.gimlet.io
+  url: oci://ghcr.io/gimlet-io/charts

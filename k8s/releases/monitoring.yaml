@@ -5,6 +5,11 @@ metadata:
   namespace: monitoring
 spec:
   interval: 1h
+  install:
+    timeout: 15m
+    createNamespace: true
+  upgrade:
+    timeout: 15m
   chart:
     spec:
       chart: kube-prometheus-stack
@@ -13,8 +18,6 @@ spec:
         name: prometheus-community
         namespace: flux-system
       interval: 1h
-  install:
-    createNamespace: true
   values:
     prometheus:
       prometheusSpec:

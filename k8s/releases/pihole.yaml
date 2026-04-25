@@ -5,6 +5,14 @@ metadata:
   namespace: apps
 spec:
   interval: 1h
+  dependsOn:
+    - name: monitoring
+      namespace: monitoring
+  install:
+    timeout: 15m
+    createNamespace: true
+  upgrade:
+    timeout: 15m
   chart:
     spec:
       chart: pihole
@@ -13,8 +21,6 @@ spec:
         name: mojo2600
         namespace: flux-system
       interval: 1h
-  install:
-    createNamespace: true
   values:
     replicaCount: 1
 
