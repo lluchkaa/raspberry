@@ -3,7 +3,8 @@
 # Usage:
 #   make deploy          - Deploy NixOS config to Pi
 #   make switch          - Apply NixOS config on already-synced repo
-#   make pihole-secret   - Create pihole-admin secret (run once; requires PIHOLE_PASSWORD)
+#   make pihole-secret               - Create pihole-admin secret (run once; requires PIHOLE_PASSWORD)
+#   make smartass-subscriber-secret  - Create smartass-subscriber secret (run once; requires tokens)
 #   make flux-bootstrap  - Bootstrap Flux GitOps (run once; requires GITHUB_TOKEN)
 #
 # After flux-bootstrap, k8s workloads are managed automatically on git push.
@@ -27,7 +28,10 @@ CAPACITOR_LICENSE_KEY ?= CHANGE_ME
 CAPACITOR_SESSION_HASH_KEY ?= CHANGE_ME
 CAPACITOR_SESSION_BLOCK_KEY ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret secrets status k3s-reset reconcile
+SMARTASS_TELEGRAM_BOT_TOKEN ?= CHANGE_ME
+SMARTASS_TELEGRAM_CHAT_ID ?= CHANGE_ME
+
+.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret secrets status k3s-reset reconcile
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -65,7 +69,19 @@ capacitor-next-secret:
 			--dry-run=client -o yaml | kubectl apply -f -\
 	'
 
-secrets: pihole-secret temporal-db-secret capacitor-next-secret
+smartass-subscriber-secret:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic smartass-subscriber -n apps \
+			--from-literal=TELEGRAM_BOT_TOKEN=$(SMARTASS_TELEGRAM_BOT_TOKEN) \
+			--from-literal=TELEGRAM_CHAT_ID=$(SMARTASS_TELEGRAM_CHAT_ID) \
+			--from-literal=TEMPORAL_HOST=raspberry.home:7233 \
+			--from-literal=TEMPORAL_NAMESPACE=cronjobs \
+			--from-literal=TEMPORAL_TASK_QUEUE=smartass-checker \
+			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret
 
 temporal-db-secret:
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
