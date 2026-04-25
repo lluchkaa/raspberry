@@ -69,6 +69,8 @@ capacitor-next-secret:
 		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic capacitor-next -n flux-system \
 			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
+			--dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic capacitor -n flux-system \
 			--from-literal=registry.yaml="" \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
