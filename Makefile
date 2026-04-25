@@ -24,7 +24,7 @@ PIHOLE_PASSWORD ?= CHANGE_ME
 GRAFANA_USERNAME ?= admin
 GRAFANA_PASSWORD ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret status
+.PHONY: deploy switch copy flux-bootstrap pihole-secret grafana-secret status k3s-reset
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -45,8 +45,8 @@ switch:
 # Create pihole-admin secret (run once before flux-bootstrap)
 pihole-secret:
 	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
-		kubectl create namespace pihole --dry-run=client -o yaml | kubectl apply -f - && \
-		kubectl create secret generic pihole-admin -n pihole \
+		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic pihole-admin -n apps \
 			--from-literal=password=$(PIHOLE_PASSWORD) \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
@@ -58,6 +58,14 @@ grafana-secret:
 			--from-literal=username=$(GRAFANA_USERNAME) \
 			--from-literal=password=$(GRAFANA_PASSWORD) \
 			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+# Wipe all k3s state and restart (nuclear reset; re-run flux-bootstrap + secrets after)
+k3s-reset:
+	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		sudo systemctl stop k3s && \
+		sudo rm -rf /var/lib/rancher /etc/rancher && \
+		sudo systemctl start k3s \
 	'
 
 # Show cluster status: Flux sync + all pods
