@@ -5,6 +5,9 @@ metadata:
   namespace: apps
 spec:
   interval: 1h
+  dependsOn:
+    - name: postgresql
+      namespace: apps
   chart:
     spec:
       chart: temporal

@@ -5,3 +5,4 @@ resources:
   - prometheus.yaml
   - temporal.yaml
   - capacitor.yaml
+  - bitnami.yaml

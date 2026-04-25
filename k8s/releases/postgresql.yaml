@@ -1,82 +1,45 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgresql-init
-  namespace: apps
-data:
-  init.sh: |
-    #!/bin/bash
-    set -e
-    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-      CREATE USER temporal WITH PASSWORD '$POSTGRES_PASSWORD';
-      CREATE DATABASE temporal OWNER temporal;
-      CREATE DATABASE temporal_visibility OWNER temporal;
-    EOSQL
----
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
 metadata:
   name: postgresql
   namespace: apps
 spec:
-  serviceName: postgresql
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgresql
-  template:
-    metadata:
-      labels:
-        app: postgresql
+  interval: 1h
+  install:
+    timeout: 15m
+    createNamespace: true
+  upgrade:
+    timeout: 15m
+  chart:
     spec:
-      containers:
-        - name: postgresql
-          image: postgres:17
-          ports:
-            - containerPort: 5432
-          env:
-            - name: POSTGRES_USER
-              value: postgres
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: temporal-db
-                  key: password
-            - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
-          volumeMounts:
-            - name: data
-              mountPath: /var/lib/postgresql/data
-            - name: initdb
-              mountPath: /docker-entrypoint-initdb.d
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-      volumes:
-        - name: initdb
-          configMap:
-            name: postgresql-init
-  volumeClaimTemplates:
-    - metadata:
-        name: data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 5Gi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgresql
-  namespace: apps
-spec:
-  selector:
-    app: postgresql
-  ports:
-    - port: 5432
-      targetPort: 5432
+      chart: postgresql
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+      interval: 1h
+  values:
+    fullnameOverride: postgresql
+    auth:
+      username: temporal
+      database: temporal
+      existingSecret: temporal-db
+      secretKeys:
+        adminPasswordKey: password
+        userPasswordKey: password
+    primary:
+      initdb:
+        scripts:
+          create_visibility_db.sh: |
+            #!/bin/bash
+            psql -v ON_ERROR_STOP=1 --username postgres \
+              --command "CREATE DATABASE temporal_visibility OWNER temporal;"
+      persistence:
+        size: 5Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
