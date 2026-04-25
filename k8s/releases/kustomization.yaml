@@ -5,3 +5,4 @@ resources:
   - monitoring.yaml
   - traefik-config.yaml
   - temporal.yaml
+  - capacitor.yaml

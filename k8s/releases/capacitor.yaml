@@ -1,0 +1,23 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: capacitor
+  namespace: flux-system
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: capacitor
+      sourceRef:
+        kind: HelmRepository
+        name: gimlet
+        namespace: flux-system
+      interval: 1h
+  values:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi

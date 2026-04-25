@@ -4,3 +4,4 @@ resources:
   - pihole.yaml
   - prometheus.yaml
   - temporal.yaml
+  - capacitor.yaml
