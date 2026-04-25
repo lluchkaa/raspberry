@@ -8,6 +8,8 @@ spec:
     logs:
       access:
         enabled: true
+      general:
+        level: DEBUG
     ports:
       pihole:
         port: 8081
