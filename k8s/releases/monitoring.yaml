@@ -25,10 +25,10 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 256Mi
+            memory: 512Mi
           limits:
             cpu: 500m
-            memory: 512Mi
+            memory: 1Gi
         storageSpec:
           volumeClaimTemplate:
             spec:
@@ -46,10 +46,10 @@ spec:
       resources:
         requests:
           cpu: 50m
-          memory: 128Mi
+          memory: 256Mi
         limits:
           cpu: 200m
-          memory: 256Mi
+          memory: 512Mi
 
     alertmanager:
       enabled: false
