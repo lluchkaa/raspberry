@@ -29,7 +29,11 @@ CAPACITOR_SESSION_HASH_KEY ?= CHANGE_ME
 CAPACITOR_SESSION_BLOCK_KEY ?= CHANGE_ME
 
 SMARTASS_TELEGRAM_BOT_TOKEN ?= CHANGE_ME
-SMARTASS_TELEGRAM_CHAT_ID ?= CHANGE_ME
+SMARTASS_TELEGRAM_USER_IDS   ?= CHANGE_ME
+SMARTASS_TEMPORAL_HOST       ?= temporal-frontend:7233
+SMARTASS_TEMPORAL_NAMESPACE  ?= cronjobs
+SMARTASS_TEMPORAL_TASK_QUEUE ?= smartass-checker
+SMARTASS_URL                 ?= https://smartass.club/lviv-myrnoho/calendar
 
 .PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret secrets status k3s-reset reconcile
 
@@ -74,10 +78,11 @@ smartass-subscriber-secret:
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic smartass-subscriber -n apps \
 			--from-literal=TELEGRAM_BOT_TOKEN=$(SMARTASS_TELEGRAM_BOT_TOKEN) \
-			--from-literal=TELEGRAM_CHAT_ID=$(SMARTASS_TELEGRAM_CHAT_ID) \
-			--from-literal=TEMPORAL_HOST=raspberry.home:7233 \
-			--from-literal=TEMPORAL_NAMESPACE=cronjobs \
-			--from-literal=TEMPORAL_TASK_QUEUE=smartass-checker \
+			--from-literal=TELEGRAM_USER_IDS=$(SMARTASS_TELEGRAM_USER_IDS) \
+			--from-literal=TEMPORAL_HOST=$(SMARTASS_TEMPORAL_HOST) \
+			--from-literal=TEMPORAL_NAMESPACE=$(SMARTASS_TEMPORAL_NAMESPACE) \
+			--from-literal=TEMPORAL_TASK_QUEUE=$(SMARTASS_TEMPORAL_TASK_QUEUE) \
+			--from-literal=SMARTASS_URL=$(SMARTASS_URL) \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 
