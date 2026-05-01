@@ -5,9 +5,6 @@ metadata:
   namespace: apps
 spec:
   interval: 1h
-  dependsOn:
-    - name: monitoring
-      namespace: monitoring
   install:
     timeout: 15m
     createNamespace: true
@@ -37,11 +34,11 @@ spec:
 
     resources:
       requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 500m
+        cpu: 200m
         memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
 
     admin:
       existingSecret: pihole-admin
@@ -69,17 +66,3 @@ spec:
       DNSMASQ_LISTENING: "all"
       DNSSEC: "true"
       QUERY_LOGGING: "true"
-
-    monitoring:
-      sidecar:
-        enabled: true
-        port: 9617
-        resources:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            cpu: 50m
-            memory: 64Mi
-      podMonitor:
-        enabled: true

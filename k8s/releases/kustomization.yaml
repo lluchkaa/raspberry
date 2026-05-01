@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - namespaces.yaml
   - pihole.yaml
-  - monitoring.yaml
   - traefik-config.yaml
   - postgresql.yaml
   - temporal.yaml
