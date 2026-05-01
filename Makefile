@@ -4,6 +4,7 @@
 #   make deploy          - Deploy NixOS config to Pi
 #   make switch          - Apply NixOS config on already-synced repo
 #   make pihole-secret               - Create pihole-admin secret (run once; requires PIHOLE_PASSWORD)
+#   make temporal-db-secret          - Create temporal-db secret (run once; requires TEMPORAL_DB_PASSWORD)
 #   make smartass-subscriber-secret  - Create smartass-subscriber secret (run once; requires tokens)
 #   make flux-bootstrap  - Bootstrap Flux GitOps (run once; requires GITHUB_TOKEN)
 #
