@@ -16,9 +16,11 @@
         8080  # Traefik
         8081  # PiHole admin
       ];
+      allowedTCPPortRanges = [{ from = 30000; to = 32767; }];
       allowedUDPPorts = [
         53    # DNS (PiHole)
       ];
+      allowedUDPPortRanges = [{ from = 30000; to = 32767; }];
     };
   };
 }
