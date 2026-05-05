@@ -23,7 +23,7 @@ spec:
 
     serviceDns:
       type: LoadBalancer
-      loadBalancerIP: "192.168.1.100"
+      loadBalancerIP: "192.168.0.101"
 
     serviceWeb:
       type: ClusterIP
@@ -54,9 +54,9 @@ spec:
 
     dnsmasq:
       customDnsEntries:
-        - address=/raspberry.home/192.168.1.100
+        - address=/raspberry.home/192.168.0.101
       customSettings:
-        - rev-server=192.168.1.0/24,192.168.1.1
+        - rev-server=192.168.0.0/24,192.168.0.1
 
     whitelist:
       - clients4.google.com
