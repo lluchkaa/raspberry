@@ -61,13 +61,7 @@ capacitor-next-secret:
 			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
 			--from-literal=SESSION_HASH_KEY=$(CAPACITOR_SESSION_HASH_KEY) \
 			--from-literal=SESSION_BLOCK_KEY=$(CAPACITOR_SESSION_BLOCK_KEY) \
-			--from-literal=registry.yaml="clusters:
-- id: in-cluster
-  name: In-cluster
-  apiServerURL: https://kubernetes.default.svc
-  certificateAuthorityFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-  serviceAccount:
-    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token" \
+			--from-literal=registry.yaml="$$(printf 'clusters:\n- id: in-cluster\n  name: In-cluster\n  apiServerURL: https://kubernetes.default.svc\n  certificateAuthorityFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n  serviceAccount:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token')" \
 			--dry-run=client -o yaml | kubectl apply -f -\
 	'
 
