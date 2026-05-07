@@ -1,0 +1,42 @@
+on: [push, pull_request]
+
+name: Nix
+
+jobs:
+  deadnix:
+    name: Dead code (deadnix)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: cachix/install-nix-action@v31
+      - run: nix run nixpkgs#deadnix -- --fail .
+
+  statix:
+    name: Lint (statix)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: cachix/install-nix-action@v31
+      - run: nix run nixpkgs#statix -- check .
+
+  fmt:
+    name: Format (nixfmt)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: cachix/install-nix-action@v31
+      - run: nix run nixpkgs#nixfmt-rfc-style -- --check $(find . -name '*.nix')
+
+  flake-check:
+    name: Flake check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            extra-platforms = aarch64-linux
+      - uses: cachix/cachix-action@v17
+        with:
+          name: deadnix
+      - run: nix flake check
