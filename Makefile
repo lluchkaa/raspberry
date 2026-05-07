@@ -59,7 +59,7 @@ pihole-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic pihole-admin -n apps \
-			--from-literal=password=$(PIHOLE_PASSWORD) \
+			--from-literal=password="$(PIHOLE_PASSWORD)" \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 
@@ -67,9 +67,9 @@ capacitor-next-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic capacitor -n flux-system \
-			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
-			--from-literal=SESSION_HASH_KEY=$(CAPACITOR_SESSION_HASH_KEY) \
-			--from-literal=SESSION_BLOCK_KEY=$(CAPACITOR_SESSION_BLOCK_KEY) \
+			--from-literal=LICENSE_KEY="$(CAPACITOR_LICENSE_KEY)" \
+			--from-literal=SESSION_HASH_KEY="$(CAPACITOR_SESSION_HASH_KEY)" \
+			--from-literal=SESSION_BLOCK_KEY="$(CAPACITOR_SESSION_BLOCK_KEY)" \
 			--from-literal=registry.yaml="$$(printf 'clusters:\n- id: in-cluster\n  name: In-cluster\n  apiServerURL: https://kubernetes.default.svc\n  certificateAuthorityFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n  serviceAccount:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token')" \
 			--dry-run=client -o yaml | kubectl apply -f -\
 	'
@@ -78,11 +78,11 @@ smartass-subscriber-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic smartass-subscriber -n apps \
-			--from-literal=TELEGRAM_BOT_TOKEN=$(SMARTASS_TELEGRAM_BOT_TOKEN) \
-			--from-literal=TELEGRAM_USER_IDS=$(SMARTASS_TELEGRAM_USER_IDS) \
-			--from-literal=TEMPORAL_HOST=$(SMARTASS_TEMPORAL_HOST) \
-			--from-literal=TEMPORAL_NAMESPACE=$(SMARTASS_TEMPORAL_NAMESPACE) \
-			--from-literal=SMARTASS_URL=$(SMARTASS_URL) \
+			--from-literal=TELEGRAM_BOT_TOKEN="$(SMARTASS_TELEGRAM_BOT_TOKEN)" \
+			--from-literal=TELEGRAM_USER_IDS="$(SMARTASS_TELEGRAM_USER_IDS)" \
+			--from-literal=TEMPORAL_HOST="$(SMARTASS_TEMPORAL_HOST)" \
+			--from-literal=TEMPORAL_NAMESPACE="$(SMARTASS_TEMPORAL_NAMESPACE)" \
+			--from-literal=SMARTASS_URL="$(SMARTASS_URL)" \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 
@@ -92,7 +92,7 @@ temporal-db-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic temporal-db -n apps \
-			--from-literal=password=$(TEMPORAL_DB_PASSWORD) \
+			--from-literal=password="$(TEMPORAL_DB_PASSWORD)" \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 
