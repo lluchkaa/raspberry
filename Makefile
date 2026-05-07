@@ -3,7 +3,9 @@
 # Usage:
 #   make deploy          - Deploy NixOS config to Pi
 #   make switch          - Apply NixOS config on already-synced repo
-#   make pihole-secret   - Create pihole-admin secret (run once; requires PIHOLE_PASSWORD)
+#   make pihole-secret               - Create pihole-admin secret (run once; requires PIHOLE_PASSWORD)
+#   make temporal-db-secret          - Create temporal-db secret (run once; requires TEMPORAL_DB_PASSWORD)
+#   make smartass-subscriber-secret  - Create smartass-subscriber secret (run once; requires tokens)
 #   make flux-bootstrap  - Bootstrap Flux GitOps (run once; requires GITHUB_TOKEN)
 #
 # After flux-bootstrap, k8s workloads are managed automatically on git push.
@@ -16,18 +18,25 @@ SSH_OPTIONS = -o PubkeyAuthentication=yes -o UserKnownHostsFile=/dev/null -o Str
 SSH = ssh $(SSH_OPTIONS) -p$(PORT)
 KUBECONFIG = /etc/rancher/k3s/k3s.yaml
 
-GITHUB_TOKEN   ?= CHANGE_ME
-GITHUB_OWNER   ?= lluchkaa
-GITHUB_REPO    ?= raspberry
+GITHUB_TOKEN ?= CHANGE_ME
+GITHUB_OWNER ?= lluchkaa
+GITHUB_REPO  ?= raspberry
+
 PIHOLE_PASSWORD ?= CHANGE_ME
 
 TEMPORAL_DB_PASSWORD ?= CHANGE_ME
 
-CAPACITOR_LICENSE_KEY ?= CHANGE_ME
-CAPACITOR_SESSION_HASH_KEY ?= CHANGE_ME
+CAPACITOR_LICENSE_KEY       ?= CHANGE_ME
+CAPACITOR_SESSION_HASH_KEY  ?= CHANGE_ME
 CAPACITOR_SESSION_BLOCK_KEY ?= CHANGE_ME
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret secrets status k3s-reset reconcile
+SMARTASS_TELEGRAM_BOT_TOKEN  ?= CHANGE_ME
+SMARTASS_TELEGRAM_USER_IDS   ?= CHANGE_ME
+SMARTASS_TEMPORAL_HOST       ?= temporal-frontend:7233
+SMARTASS_TEMPORAL_NAMESPACE  ?= cronjobs
+SMARTASS_URL                 ?= https://smartass.club/lviv-myrnoho/calendar
+
+.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret secrets status k3s-reset reconcile
 
 # Sync repo and apply NixOS config
 deploy: copy switch
@@ -47,7 +56,7 @@ switch:
 
 # Create pihole-admin secret (run once before flux-bootstrap)
 pihole-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic pihole-admin -n apps \
 			--from-literal=password=$(PIHOLE_PASSWORD) \
@@ -55,7 +64,7 @@ pihole-secret:
 	'
 
 capacitor-next-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic capacitor -n flux-system \
 			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
@@ -65,10 +74,22 @@ capacitor-next-secret:
 			--dry-run=client -o yaml | kubectl apply -f -\
 	'
 
-secrets: pihole-secret temporal-db-secret capacitor-next-secret
+smartass-subscriber-secret:
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic smartass-subscriber -n apps \
+			--from-literal=TELEGRAM_BOT_TOKEN=$(SMARTASS_TELEGRAM_BOT_TOKEN) \
+			--from-literal=TELEGRAM_USER_IDS=$(SMARTASS_TELEGRAM_USER_IDS) \
+			--from-literal=TEMPORAL_HOST=$(SMARTASS_TEMPORAL_HOST) \
+			--from-literal=TEMPORAL_NAMESPACE=$(SMARTASS_TEMPORAL_NAMESPACE) \
+			--from-literal=SMARTASS_URL=$(SMARTASS_URL) \
+			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret
 
 temporal-db-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic temporal-db -n apps \
 			--from-literal=password=$(TEMPORAL_DB_PASSWORD) \

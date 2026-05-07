@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smartass-subscriber
+  namespace: apps
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: smartass-subscriber
+  template:
+    metadata:
+      labels:
+        app: smartass-subscriber
+    spec:
+      containers:
+        - name: smartass-subscriber
+          image: ghcr.io/lluchkaa/smartass-subscriber:latest
+          envFrom:
+            - secretRef:
+                name: smartass-subscriber
+          env:
+            - name: STATE_FILE
+              value: /data/smartass_state.json
+          volumeMounts:
+            - name: state
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      volumes:
+        - name: state
+          persistentVolumeClaim:
+            claimName: smartass-subscriber-state
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smartass-subscriber-state
+  namespace: apps
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
