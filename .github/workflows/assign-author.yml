@@ -4,6 +4,10 @@ on:
 
 name: Auto Assign PR Author
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   pull-requests: write
 

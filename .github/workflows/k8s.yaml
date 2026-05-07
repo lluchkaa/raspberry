@@ -2,6 +2,10 @@ on: [push, pull_request]
 
 name: Kubernetes
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   kustomize-build:
     name: Kustomize build
