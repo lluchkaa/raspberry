@@ -1,0 +1,14 @@
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+name: Auto Assign PR Author
+
+permissions:
+  pull-requests: write
+
+jobs:
+  assign-author-of-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: toshimaru/auto-author-assign@v3.0.2
