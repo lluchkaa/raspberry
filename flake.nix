@@ -22,7 +22,7 @@
       self,
       nixos-raspberrypi,
       ...
-    }@inputs:
+    }:
     let
       system = "aarch64-linux";
       username = "ll-raspberry";
@@ -34,13 +34,16 @@
           inherit nixos-raspberrypi;
         };
         modules = [
-          ({ nixos-raspberrypi, ... }: {
-            imports = with nixos-raspberrypi.nixosModules; [
-              raspberry-pi-5.base
-              raspberry-pi-5.page-size-16k
-              sd-image
-            ];
-          })
+          (
+            { nixos-raspberrypi, ... }:
+            {
+              imports = with nixos-raspberrypi.nixosModules; [
+                raspberry-pi-5.base
+                raspberry-pi-5.page-size-16k
+                sd-image
+              ];
+            }
+          )
           ./nix/os
         ];
       };

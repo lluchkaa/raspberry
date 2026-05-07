@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ ... }:
 
 {
   # Enable cgroup memory for k3s/containers
@@ -31,8 +31,10 @@
   };
 
   # Swap (useful on Pi with limited RAM)
-  swapDevices = [{
-    device = "/swapfile";
-    size = 2048; # MB
-  }];
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 2048; # MB
+    }
+  ];
 }
