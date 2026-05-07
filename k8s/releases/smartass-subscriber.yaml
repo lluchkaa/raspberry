@@ -14,9 +14,6 @@ spec:
     metadata:
       labels:
         app: smartass-subscriber
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9090"
     spec:
       containers:
         - name: smartass-subscriber
