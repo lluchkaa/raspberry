@@ -57,7 +57,7 @@ switch:
 
 # Create pihole-admin secret (run once before flux-bootstrap)
 pihole-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic pihole-admin -n apps \
 			--from-literal=password=$(PIHOLE_PASSWORD) \
@@ -65,7 +65,7 @@ pihole-secret:
 	'
 
 capacitor-next-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic capacitor -n flux-system \
 			--from-literal=LICENSE_KEY=$(CAPACITOR_LICENSE_KEY) \
@@ -76,7 +76,7 @@ capacitor-next-secret:
 	'
 
 smartass-subscriber-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic smartass-subscriber -n apps \
 			--from-literal=TELEGRAM_BOT_TOKEN=$(SMARTASS_TELEGRAM_BOT_TOKEN) \
@@ -91,7 +91,7 @@ smartass-subscriber-secret:
 secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret
 
 temporal-db-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic temporal-db -n apps \
 			--from-literal=password=$(TEMPORAL_DB_PASSWORD) \
