@@ -1,6 +1,4 @@
-{ ... }:
-
-{
+_: {
   # Enable cgroup memory for k3s/containers
   boot.kernelParams = [
     "cgroup_enable=cpuset"

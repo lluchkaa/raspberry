@@ -1,8 +1,14 @@
 { username, ... }:
 {
   nix.settings = {
-    trusted-users = [ "root" username ];
-    experimental-features = [ "nix-command" "flakes" ];
+    trusted-users = [
+      "root"
+      username
+    ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     substituters = [
       "https://nixos-raspberrypi.cachix.org"
       "https://nix-community.cachix.org"

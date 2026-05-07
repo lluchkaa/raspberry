@@ -1,27 +1,12 @@
 { pkgs, ... }:
 {
-  programs.git = {
-    enable = true;
-  };
-
-  programs.vim = {
-    enable = true;
-  };
-
-  programs.neovim = {
-    enable = true;
-  };
-
-  programs.htop = {
-    enable = true;
-  };
-
-  programs.fish = {
-    enable = true;
-  };
-
-  programs.zsh = {
-    enable = true;
+  programs = {
+    git.enable = true;
+    vim.enable = true;
+    neovim.enable = true;
+    htop.enable = true;
+    fish.enable = true;
+    zsh.enable = true;
   };
 
   environment.systemPackages = [
