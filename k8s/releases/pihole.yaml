@@ -66,6 +66,7 @@ spec:
         - address=/raspberry.home/192.168.0.101
       customSettings:
         - rev-server=192.168.0.0/24,192.168.0.1
+        - no-aaaa
 
     whitelist:
       - clients4.google.com
