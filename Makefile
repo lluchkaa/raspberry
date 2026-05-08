@@ -79,7 +79,7 @@ smartass-subscriber-secret:
 		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
 		kubectl create secret generic smartass-subscriber -n apps \
 			--from-literal=TELEGRAM_BOT_TOKEN="$(SMARTASS_TELEGRAM_BOT_TOKEN)" \
-			--from-literal=TELEGRAM_USER_IDS="$(SMARTASS_TELEGRAM_USER_IDS)" \
+			--from-literal=TELEGRAM_USER_IDS='"'"'$(SMARTASS_TELEGRAM_USER_IDS)'"'"' \
 			--from-literal=TEMPORAL_HOST="$(SMARTASS_TEMPORAL_HOST)" \
 			--from-literal=TEMPORAL_NAMESPACE="$(SMARTASS_TEMPORAL_NAMESPACE)" \
 			--from-literal=SMARTASS_URL="$(SMARTASS_URL)" \

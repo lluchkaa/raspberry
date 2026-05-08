@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: cachix/install-nix-action@v31
-      - run: nix run nixpkgs#nixfmt-rfc-style -- --check $(find . -name '*.nix')
+      - run: nix run nixpkgs#nixfmt -- --check $(find . -name '*.nix')
 
   flake-check:
     name: Flake check
