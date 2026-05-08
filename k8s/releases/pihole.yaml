@@ -51,6 +51,15 @@ spec:
       - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
       - https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt
       - https://adaway.org/hosts.txt
+      - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt
+      - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/tif.medium.txt
+      - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/fake.txt
+      - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/popupads.txt
+      - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/doh-vpn-proxy-bypass.txt
+      - https://big.oisd.nl/
+      - https://urlhaus.abuse.ch/downloads/hostfile/
+      - https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV.txt
+      - https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
 
     dnsmasq:
       customDnsEntries:
@@ -66,3 +75,60 @@ spec:
       DNSMASQ_LISTENING: "all"
       DNSSEC: "true"
       QUERY_LOGGING: "true"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pihole-gravity-updater
+  namespace: apps
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pihole-gravity-updater
+  namespace: apps
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [list]
+  - apiGroups: [""]
+    resources: [pods/exec]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pihole-gravity-updater
+  namespace: apps
+subjects:
+  - kind: ServiceAccount
+    name: pihole-gravity-updater
+    namespace: apps
+roleRef:
+  kind: Role
+  name: pihole-gravity-updater
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pihole-gravity-update
+  namespace: apps
+spec:
+  schedule: "0 3 * * 0"  # Every Sunday at 03:00
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: pihole-gravity-updater
+          restartPolicy: OnFailure
+          containers:
+            - name: gravity-update
+              image: bitnami/kubectl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  POD=$(kubectl get pod -n apps -l app=pihole -o jsonpath='{.items[0].metadata.name}')
+                  kubectl exec -n apps "$POD" -- pihole -g
