@@ -131,4 +131,11 @@ spec:
                 - -c
                 - |
                   POD=$(kubectl get pod -n apps -l app=pihole -o jsonpath='{.items[0].metadata.name}')
+                  kubectl exec -i -n apps "$POD" -- sh -c '
+                    while IFS= read -r url; do
+                      [ -z "$url" ] && continue
+                      pihole-FTL sqlite3 /etc/pihole/gravity.db \
+                        "INSERT OR IGNORE INTO adlist (address, enabled) VALUES ('"'"'$url'"'"', 1);"
+                    done < /etc/pihole/adlists.list
+                  '
                   kubectl exec -n apps "$POD" -- pihole -g
