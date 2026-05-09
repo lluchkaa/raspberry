@@ -4,7 +4,7 @@ metadata:
   name: smartass-subscriber
   namespace: apps
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
@@ -50,3 +50,83 @@ spec:
   resources:
     requests:
       storage: 10Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: smartass-subscriber-scaler
+  namespace: apps
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: smartass-subscriber-scaler
+  namespace: apps
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale"]
+    verbs: ["patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: smartass-subscriber-scaler
+  namespace: apps
+subjects:
+  - kind: ServiceAccount
+    name: smartass-subscriber-scaler
+    namespace: apps
+roleRef:
+  kind: Role
+  name: smartass-subscriber-scaler
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: smartass-subscriber-start
+  namespace: apps
+spec:
+  schedule: "0 0 * * 5"  # midnight UTC Friday
+  timeZone: "UTC"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: smartass-subscriber-scaler
+          restartPolicy: OnFailure
+          containers:
+            - name: scaler
+              image: bitnami/kubectl:latest
+              command:
+                - kubectl
+                - scale
+                - deployment/smartass-subscriber
+                - --replicas=1
+                - -n
+                - apps
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: smartass-subscriber-stop
+  namespace: apps
+spec:
+  schedule: "0 0 * * 6"  # midnight UTC Saturday
+  timeZone: "UTC"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: smartass-subscriber-scaler
+          restartPolicy: OnFailure
+          containers:
+            - name: scaler
+              image: bitnami/kubectl:latest
+              command:
+                - kubectl
+                - scale
+                - deployment/smartass-subscriber
+                - --replicas=0
+                - -n
+                - apps
