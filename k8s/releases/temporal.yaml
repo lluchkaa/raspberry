@@ -132,8 +132,8 @@ spec:
                 - sh
                 - -c
                 - |
-                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"suspend":true}}' &&
-                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"values":{"server":{"replicaCount":1},"admintools":{"enabled":true},"web":{"enabled":true}}}}'
+                  kubectl annotate helmrelease/temporal -n apps kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite &&
+                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"suspend":false,"values":{"server":{"replicaCount":1},"admintools":{"enabled":true},"web":{"enabled":true}}}}'
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -157,4 +157,4 @@ spec:
                 - -c
                 - |
                   kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"values":{"server":{"replicaCount":0},"admintools":{"enabled":false},"web":{"enabled":false}}}}' &&
-                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"suspend":false}}'
+                  kubectl annotate helmrelease/temporal -n apps kustomize.toolkit.fluxcd.io/reconcile- || true
