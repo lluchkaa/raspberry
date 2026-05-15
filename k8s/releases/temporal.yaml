@@ -129,14 +129,11 @@ spec:
             - name: scaler
               image: bitnami/kubectl:latest
               command:
-                - kubectl
-                - patch
-                - helmrelease/temporal
-                - -n
-                - apps
-                - --type=merge
-                - -p
-                - '{"spec":{"values":{"server":{"replicaCount":1},"admintools":{"enabled":true},"web":{"enabled":true}}}}'
+                - sh
+                - -c
+                - |
+                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"suspend":true}}' &&
+                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"values":{"server":{"replicaCount":1},"admintools":{"enabled":true},"web":{"enabled":true}}}}'
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -156,11 +153,8 @@ spec:
             - name: scaler
               image: bitnami/kubectl:latest
               command:
-                - kubectl
-                - patch
-                - helmrelease/temporal
-                - -n
-                - apps
-                - --type=merge
-                - -p
-                - '{"spec":{"values":{"server":{"replicaCount":0},"admintools":{"enabled":false},"web":{"enabled":false}}}}'
+                - sh
+                - -c
+                - |
+                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"values":{"server":{"replicaCount":0},"admintools":{"enabled":false},"web":{"enabled":false}}}}' &&
+                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"suspend":false}}'

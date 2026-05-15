@@ -65,7 +65,7 @@ metadata:
 rules:
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: ["get"]
+    verbs: ["get", "patch"]
   - apiGroups: ["apps"]
     resources: ["deployments/scale"]
     verbs: ["get", "patch"]
@@ -102,12 +102,11 @@ spec:
             - name: scaler
               image: bitnami/kubectl:latest
               command:
-                - kubectl
-                - scale
-                - deployment/smartass-subscriber
-                - --replicas=1
-                - -n
-                - apps
+                - sh
+                - -c
+                - |
+                  kubectl annotate deployment/smartass-subscriber -n apps kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite &&
+                  kubectl scale deployment/smartass-subscriber --replicas=1 -n apps
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -127,9 +126,8 @@ spec:
             - name: scaler
               image: bitnami/kubectl:latest
               command:
-                - kubectl
-                - scale
-                - deployment/smartass-subscriber
-                - --replicas=0
-                - -n
-                - apps
+                - sh
+                - -c
+                - |
+                  kubectl scale deployment/smartass-subscriber --replicas=0 -n apps &&
+                  kubectl annotate deployment/smartass-subscriber -n apps kustomize.toolkit.fluxcd.io/reconcile- || true
