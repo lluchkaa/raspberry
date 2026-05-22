@@ -21,9 +21,14 @@ spec:
     createNamespace: true
   upgrade:
     timeout: 15m
+  driftDetection:
+    mode: enabled
+    ignore:
+      - paths: ["/spec/replicas"]
+        target:
+          kind: Deployment
   values:
     server:
-      replicaCount: 0
       resources:
         requests:
           cpu: 200m
@@ -81,80 +86,74 @@ spec:
           cpu: 200m
           memory: 256Mi
 ---
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
 metadata:
-  name: temporal-scaler
-  namespace: apps
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: temporal-scaler
-  namespace: apps
-rules:
-  - apiGroups: ["helm.toolkit.fluxcd.io"]
-    resources: ["helmreleases"]
-    verbs: ["get", "patch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: temporal-scaler
-  namespace: apps
-subjects:
-  - kind: ServiceAccount
-    name: temporal-scaler
-    namespace: apps
-roleRef:
-  kind: Role
-  name: temporal-scaler
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: temporal-start
+  name: temporal-frontend
   namespace: apps
 spec:
-  schedule: "0 0 * * 5"  # midnight UTC Friday
-  timeZone: "UTC"
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          serviceAccountName: temporal-scaler
-          restartPolicy: OnFailure
-          containers:
-            - name: scaler
-              image: bitnami/kubectl:latest
-              command:
-                - sh
-                - -c
-                - |
-                  kubectl annotate helmrelease/temporal -n apps kustomize.toolkit.fluxcd.io/reconcile=disabled --overwrite &&
-                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"suspend":false,"values":{"server":{"replicaCount":1},"admintools":{"enabled":true},"web":{"enabled":true}}}}'
+  scaleTargetRef:
+    name: temporal-frontend
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  triggers:
+    - type: cron
+      metadata:
+        timezone: UTC
+        start: "0 0 * * 5"
+        end: "0 0 * * 6"
+        desiredReplicas: "1"
 ---
-apiVersion: batch/v1
-kind: CronJob
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
 metadata:
-  name: temporal-stop
+  name: temporal-history
   namespace: apps
 spec:
-  schedule: "0 0 * * 6"  # midnight UTC Saturday
-  timeZone: "UTC"
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          serviceAccountName: temporal-scaler
-          restartPolicy: OnFailure
-          containers:
-            - name: scaler
-              image: bitnami/kubectl:latest
-              command:
-                - sh
-                - -c
-                - |
-                  kubectl patch helmrelease/temporal -n apps --type=merge -p '{"spec":{"values":{"server":{"replicaCount":0},"admintools":{"enabled":false},"web":{"enabled":false}}}}' &&
-                  kubectl annotate helmrelease/temporal -n apps kustomize.toolkit.fluxcd.io/reconcile- || true
+  scaleTargetRef:
+    name: temporal-history
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  triggers:
+    - type: cron
+      metadata:
+        timezone: UTC
+        start: "0 0 * * 5"
+        end: "0 0 * * 6"
+        desiredReplicas: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: temporal-matching
+  namespace: apps
+spec:
+  scaleTargetRef:
+    name: temporal-matching
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  triggers:
+    - type: cron
+      metadata:
+        timezone: UTC
+        start: "0 0 * * 5"
+        end: "0 0 * * 6"
+        desiredReplicas: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: temporal-worker
+  namespace: apps
+spec:
+  scaleTargetRef:
+    name: temporal-worker
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  triggers:
+    - type: cron
+      metadata:
+        timezone: UTC
+        start: "0 0 * * 5"
+        end: "0 0 * * 6"
+        desiredReplicas: "1"

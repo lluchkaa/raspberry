@@ -5,3 +5,4 @@ resources:
   - temporal.yaml
   - capacitor.yaml
   - bitnami.yaml
+  - keda.yaml
