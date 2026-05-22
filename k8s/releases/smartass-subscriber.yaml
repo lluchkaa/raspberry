@@ -49,21 +49,3 @@ spec:
   resources:
     requests:
       storage: 10Mi
----
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
-  name: smartass-subscriber
-  namespace: apps
-spec:
-  scaleTargetRef:
-    name: smartass-subscriber
-  minReplicaCount: 0
-  maxReplicaCount: 1
-  triggers:
-    - type: cron
-      metadata:
-        timezone: UTC
-        start: "30 0 * * 5"
-        end: "0 0 * * 6"
-        desiredReplicas: "1"

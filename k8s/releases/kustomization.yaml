@@ -9,3 +9,4 @@ resources:
   - temporal.yaml
   - capacitor.yaml
   - smartass-subscriber.yaml
+  - keda-scaledobjects.yaml
