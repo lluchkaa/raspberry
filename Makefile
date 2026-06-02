@@ -58,7 +58,7 @@ copy:
 
 # Apply NixOS configuration
 switch:
-	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo nixos-rebuild switch --flake ~/raspberry#raspberry --accept-flake-config'
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo nixos-rebuild switch --flake ~/raspberry#raspberry --accept-flake-config' --verbose
 
 # Copy Tailscale auth key to Pi (run once; rotate every 90 days)
 tailscale-authkey:
