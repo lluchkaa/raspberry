@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: deadnix
+        name: Dead code (deadnix)
+        language: system
+        entry: nix run nixpkgs#deadnix -- --fail
+        files: \.nix$
+        pass_filenames: true
+
+      - id: statix
+        name: Lint (statix)
+        language: system
+        entry: nix run nixpkgs#statix -- check
+        files: \.nix$
+        pass_filenames: false
+
+      - id: nixfmt
+        name: Format (nixfmt)
+        language: system
+        entry: nix run nixpkgs#nixfmt -- --check
+        files: \.nix$
+        pass_filenames: true
+
+      - id: kustomize-build
+        name: Kustomize build
+        language: system
+        entry: nix shell nixpkgs#kustomize --command kustomize build k8s/
+        pass_filenames: false
+        files: ^k8s/

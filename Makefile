@@ -36,7 +36,11 @@ SMARTASS_TEMPORAL_HOST       ?= temporal-frontend:7233
 SMARTASS_TEMPORAL_NAMESPACE  ?= cronjobs
 SMARTASS_URL                 ?= https://smartass.club/lviv-myrnoho/calendar
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret secrets status k3s-reset reconcile
+.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret secrets status k3s-reset reconcile hooks
+
+# Install pre-commit hooks (requires pre-commit: nix shell nixpkgs#pre-commit)
+hooks:
+	nix shell nixpkgs#pre-commit --command pre-commit install
 
 # Sync repo and apply NixOS config
 deploy: copy switch
