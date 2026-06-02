@@ -6,6 +6,7 @@
     ./k3s.nix
     ./nix.nix
     ./pkgs
+    ./tailscale.nix
     ./user.nix
   ];
 

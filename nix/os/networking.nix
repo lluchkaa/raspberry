@@ -23,6 +23,7 @@ _: {
       ];
       allowedUDPPorts = [
         53 # DNS (PiHole)
+        41641 # Tailscale
       ];
       allowedUDPPortRanges = [
         {

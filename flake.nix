@@ -14,6 +14,7 @@
   };
 
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
   };
 

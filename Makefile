@@ -22,6 +22,8 @@ GITHUB_TOKEN ?= CHANGE_ME
 GITHUB_OWNER ?= lluchkaa
 GITHUB_REPO  ?= raspberry
 
+TAILSCALE_AUTHKEY_FILE ?= secrets/tailscale-authkey
+
 PIHOLE_PASSWORD ?= CHANGE_ME
 
 TEMPORAL_DB_PASSWORD ?= CHANGE_ME
@@ -36,7 +38,7 @@ SMARTASS_TEMPORAL_HOST       ?= temporal-frontend:7233
 SMARTASS_TEMPORAL_NAMESPACE  ?= cronjobs
 SMARTASS_URL                 ?= https://smartass.club/lviv-myrnoho/calendar
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret secrets status k3s-reset reconcile hooks
+.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret tailscale-authkey secrets status k3s-reset reconcile hooks
 
 # Install pre-commit hooks (requires pre-commit: nix shell nixpkgs#pre-commit)
 hooks:
@@ -57,6 +59,12 @@ copy:
 # Apply NixOS configuration
 switch:
 	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo nixos-rebuild switch --flake ~/raspberry#raspberry --accept-flake-config'
+
+# Copy Tailscale auth key to Pi (run once; rotate every 90 days)
+tailscale-authkey:
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo install -m 600 -o root /dev/null /etc/tailscale-authkey'
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'cat > /tmp/tailscale-authkey' < $(TAILSCALE_AUTHKEY_FILE)
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo mv /tmp/tailscale-authkey /etc/tailscale-authkey && sudo chmod 600 /etc/tailscale-authkey'
 
 # Create pihole-admin secret (run once before flux-bootstrap)
 pihole-secret:
