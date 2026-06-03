@@ -3,6 +3,12 @@ _: {
     hostName = "raspberry";
     useDHCP = true;
 
+    wireless = {
+      enable = true;
+      secretsFile = "/var/lib/secrets/wireless-env";
+      networks."AstraNet-164-5G".pskRaw = "ext:WIFI_PSK";
+    };
+
     firewall = {
       enable = true;
       allowedTCPPorts = [

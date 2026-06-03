@@ -1,6 +1,7 @@
 # Raspberry Pi NixOS deployment
 #
 # Usage:
+#   make build-image     - Build SD card image via Docker (cross-build from macOS)
 #   make deploy          - Deploy NixOS config to Pi
 #   make switch          - Apply NixOS config on already-synced repo
 #   make pihole-secret               - Create pihole-admin secret (run once; requires PIHOLE_PASSWORD)
@@ -38,7 +39,23 @@ SMARTASS_TEMPORAL_HOST       ?= temporal-frontend:7233
 SMARTASS_TEMPORAL_NAMESPACE  ?= cronjobs
 SMARTASS_URL                 ?= https://smartass.club/lviv-myrnoho/calendar
 
-.PHONY: deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret tailscale-authkey secrets status k3s-reset reconcile hooks
+.PHONY: build-image deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret tailscale-authkey wireless-secret secrets status k3s-rotate-certs k3s-reset reconcile hooks
+
+# Build SD image inside a linux/arm64 Docker container (works from aarch64-darwin)
+# Result image lands in ./result-image/ on the host.
+build-image:
+	mkdir -p result-image
+	docker run --rm \
+		--platform linux/arm64 \
+		-v "$(CURDIR):/repo" \
+		-v nix-store:/nix \
+		-w /repo \
+		nixos/nix \
+		sh -c "nix build .#images.raspberry \
+			--extra-experimental-features 'nix-command flakes' \
+			--always-allow-substitutes \
+			--accept-flake-config && \
+			cp -L result/sd-image/*.img* /repo/result-image/"
 
 # Install pre-commit hooks (requires pre-commit: nix shell nixpkgs#pre-commit)
 hooks:
@@ -59,6 +76,12 @@ copy:
 # Apply NixOS configuration
 switch:
 	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo nixos-rebuild switch --flake ~/raspberry#raspberry --accept-flake-config' --verbose
+
+# Copy WiFi credentials to Pi (run once before nixos-rebuild switch)
+wireless-secret:
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo mkdir -p /var/lib/secrets && sudo install -m 600 -o root /dev/null /var/lib/secrets/wireless-env'
+	scp -P$(PORT) $(SSH_OPTIONS) secrets/wireless-env $(REMOTE_USER)@$(ADDR):/tmp/wireless-env
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo mv /tmp/wireless-env /var/lib/secrets/wireless-env && sudo chmod 600 /var/lib/secrets/wireless-env'
 
 # Copy Tailscale auth key to Pi (run once; rotate every 90 days)
 tailscale-authkey:
@@ -82,7 +105,7 @@ capacitor-next-secret:
 			--from-literal=LICENSE_KEY="$(CAPACITOR_LICENSE_KEY)" \
 			--from-literal=SESSION_HASH_KEY="$(CAPACITOR_SESSION_HASH_KEY)" \
 			--from-literal=SESSION_BLOCK_KEY="$(CAPACITOR_SESSION_BLOCK_KEY)" \
-			--from-literal=registry.yaml="$$(printf 'clusters:\n- id: in-cluster\n  name: In-cluster\n  apiServerURL: https://kubernetes.default.svc\n  certificateAuthorityFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n  serviceAccount:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token')" \
+			--from-literal=registry.yaml="$$(printf "clusters:\n- id: in-cluster\n  name: In-cluster\n  apiServerURL: https://kubernetes.default.svc\n  certificateAuthorityFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n  serviceAccount:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token")" \
 			--dry-run=client -o yaml | kubectl apply -f -\
 	'
 
@@ -107,6 +130,10 @@ temporal-db-secret:
 			--from-literal=password="$(TEMPORAL_DB_PASSWORD)" \
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
+
+# Rotate k3s TLS certificates (run when certs expire ~annually; restarts k3s)
+k3s-rotate-certs:
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo k3s certificate rotate && sudo systemctl restart k3s'
 
 # Wipe all k3s state and restart (nuclear reset; re-run flux-bootstrap + secrets after)
 k3s-reset:
