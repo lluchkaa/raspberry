@@ -15,16 +15,13 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-
-    nixos-raspberrypi = {
-      url = "github:nvmd/nixos-raspberrypi/main";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
   };
 
   outputs =
     {
       self,
+      nixpkgs,
       nixos-raspberrypi,
       ...
     }:
@@ -36,7 +33,7 @@
       nixosConfigurations.raspberry = nixos-raspberrypi.lib.nixosSystemFull {
         specialArgs = {
           inherit self username system;
-          inherit nixos-raspberrypi;
+          inherit nixpkgs nixos-raspberrypi;
         };
         modules = [
           (
