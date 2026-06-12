@@ -73,6 +73,24 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
+  name: temporal-web
+  namespace: apps
+spec:
+  scaleTargetRef:
+    name: temporal-web
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  triggers:
+    - type: cron
+      metadata:
+        timezone: UTC
+        start: "0 0 * * 5"
+        end: "0 0 * * 6"
+        desiredReplicas: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
   name: smartass-subscriber
   namespace: apps
 spec:
