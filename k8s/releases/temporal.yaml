@@ -21,12 +21,6 @@ spec:
     createNamespace: true
   upgrade:
     timeout: 15m
-  driftDetection:
-    mode: enabled
-    ignore:
-      - paths: ["/spec/replicas"]
-        target:
-          kind: Deployment
   values:
     server:
       resources:
