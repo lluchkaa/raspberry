@@ -52,7 +52,7 @@ EQUEUE_TEMPORAL_NAMESPACE   ?= e-queue
 EQUEUE_SERVICE_ID           ?= 47
 EQUEUE_TARGET_CITY          ?= м. Львів
 
-.PHONY: build-image deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret ghcr-secret e-queue-secret e-queue-key tailscale-authkey wireless-secret secrets status k3s-rotate-certs k3s-reset reconcile hooks
+.PHONY: build-image deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret ghcr-secret e-queue-secret e-queue-key tailscale-authkey wireless-secret secrets status k3s-rotate-certs k3s-reset reconcile restart-pod hooks
 
 # Build SD image inside a linux/arm64 Docker container (works from aarch64-darwin)
 # Result image lands in ./result-image/ on the host.
@@ -201,6 +201,10 @@ status:
 		echo "" && \
 		KUBECONFIG=$(KUBECONFIG) kubectl get pods -A \
 	'
+
+# Restart a deployment to pull the latest image (usage: make restart-pod POD=e-queue)
+restart-pod:
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'KUBECONFIG=$(KUBECONFIG) kubectl rollout restart deployment/$(POD) -n apps'
 
 # Force Flux to reconcile immediately
 reconcile:
