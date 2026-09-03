@@ -7,6 +7,9 @@
 #   make pihole-secret               - Create pihole-admin secret (run once; requires PIHOLE_PASSWORD)
 #   make temporal-db-secret          - Create temporal-db secret (run once; requires TEMPORAL_DB_PASSWORD)
 #   make smartass-subscriber-secret  - Create smartass-subscriber secret (run once; requires tokens)
+#   make ghcr-secret                 - Create ghcr.io pull secret (run once; requires GITHUB_TOKEN with read:packages)
+#   make e-queue-secret              - Create e-queue secret (run once; requires tokens)
+#   make e-queue-key                 - Upload the e-queue login key file (run once; rotate on key renewal)
 #   make flux-bootstrap  - Bootstrap Flux GitOps (run once; requires GITHUB_TOKEN)
 #
 # After flux-bootstrap, k8s workloads are managed automatically on git push.
@@ -39,7 +42,17 @@ SMARTASS_TEMPORAL_HOST       ?= temporal-frontend:7233
 SMARTASS_TEMPORAL_NAMESPACE  ?= cronjobs
 SMARTASS_URL                 ?= https://smartass.club/lviv-myrnoho/calendar
 
-.PHONY: build-image deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret tailscale-authkey wireless-secret secrets status k3s-rotate-certs k3s-reset reconcile hooks
+EQUEUE_KEY_FILE             ?= secrets/e-queue-key
+EQUEUE_KEY_PASSWORD         ?= CHANGE_ME
+EQUEUE_KEY_PROVIDER         ?= КНЕДП АЦСК АТ КБ "ПриватБанк"
+EQUEUE_TELEGRAM_BOT_TOKEN   ?= CHANGE_ME
+EQUEUE_TELEGRAM_USER_IDS    ?= CHANGE_ME
+EQUEUE_TEMPORAL_HOST        ?= temporal-frontend:7233
+EQUEUE_TEMPORAL_NAMESPACE   ?= e-queue
+EQUEUE_SERVICE_ID           ?= 47
+EQUEUE_TARGET_CITY          ?= м. Львів
+
+.PHONY: build-image deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret ghcr-secret e-queue-secret e-queue-key tailscale-authkey wireless-secret secrets status k3s-rotate-certs k3s-reset reconcile hooks
 
 # Build SD image inside a linux/arm64 Docker container (works from aarch64-darwin)
 # Result image lands in ./result-image/ on the host.
@@ -121,7 +134,43 @@ smartass-subscriber-secret:
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 
-secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret
+# Pull secret for private ghcr.io packages (e-queue). GITHUB_TOKEN needs read:packages.
+ghcr-secret:
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret docker-registry ghcr -n apps \
+			--docker-server=ghcr.io \
+			--docker-username=$(GITHUB_OWNER) \
+			--docker-password="$(GITHUB_TOKEN)" \
+			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+e-queue-secret:
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic e-queue -n apps \
+			--from-literal=LOGIN_KEY_PASSWORD="$(EQUEUE_KEY_PASSWORD)" \
+			--from-literal=LOGIN_KEY_PROVIDER='"'"'$(EQUEUE_KEY_PROVIDER)'"'"' \
+			--from-literal=TELEGRAM_BOT_TOKEN="$(EQUEUE_TELEGRAM_BOT_TOKEN)" \
+			--from-literal=TELEGRAM_USER_IDS='"'"'$(EQUEUE_TELEGRAM_USER_IDS)'"'"' \
+			--from-literal=TEMPORAL_HOST="$(EQUEUE_TEMPORAL_HOST)" \
+			--from-literal=TEMPORAL_NAMESPACE="$(EQUEUE_TEMPORAL_NAMESPACE)" \
+			--from-literal=EQUEUE_SERVICE_ID="$(EQUEUE_SERVICE_ID)" \
+			--from-literal=EQUEUE_TARGET_CITY="$(EQUEUE_TARGET_CITY)" \
+			--dry-run=client -o yaml | kubectl apply -f - \
+	'
+
+e-queue-key:
+	@scp -P$(PORT) $(SSH_OPTIONS) $(EQUEUE_KEY_FILE) $(REMOTE_USER)@$(ADDR):/tmp/e-queue-key
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+		kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f - && \
+		kubectl create secret generic e-queue-key -n apps \
+			--from-file=key=/tmp/e-queue-key \
+			--dry-run=client -o yaml | kubectl apply -f - ; \
+		rm -f /tmp/e-queue-key \
+	'
+
+secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret ghcr-secret e-queue-secret e-queue-key
 
 temporal-db-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \

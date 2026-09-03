@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: e-queue
+  namespace: apps
+spec:
+  # One Chromium profile has a single writer, and it lives on an RWO volume.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: e-queue
+  template:
+    metadata:
+      labels:
+        app: e-queue
+    spec:
+      # ghcr.io/lluchkaa/e-queue is a private package (see `make ghcr-secret`).
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+        - name: e-queue
+          image: ghcr.io/lluchkaa/e-queue:latest
+          envFrom:
+            - secretRef:
+                name: e-queue
+          env:
+            - name: BROWSER_PROFILE_DIR
+              value: /data/profile
+            - name: LOGIN_KEY_FILE
+              value: /login-key/key
+          volumeMounts:
+            - name: profile
+              mountPath: /data
+            - name: login-key
+              mountPath: /login-key
+              readOnly: true
+            # Chromium crashes on real pages with the default 64 MB /dev/shm.
+            - name: dshm
+              mountPath: /dev/shm
+          resources:
+            requests:
+              cpu: 200m
+              memory: 768Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+      volumes:
+        # Holds the browser profile, and the profile holds the logged-in session.
+        - name: profile
+          persistentVolumeClaim:
+            claimName: e-queue-profile
+        - name: login-key
+          secret:
+            secretName: e-queue-key
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: e-queue-profile
+  namespace: apps
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
