@@ -68,7 +68,8 @@ build-image:
 			--extra-experimental-features 'nix-command flakes' \
 			--always-allow-substitutes \
 			--accept-flake-config && \
-			cp -L result/sd-image/*.img* /repo/result-image/"
+			cp -L --remove-destination result/sd-image/*.img* /repo/result-image/ && \
+			chmod u+w /repo/result-image/*.img*"
 
 # Install pre-commit hooks (requires pre-commit: nix shell nixpkgs#pre-commit)
 hooks:
@@ -92,9 +93,9 @@ switch:
 
 # Copy WiFi credentials to Pi (run once before nixos-rebuild switch)
 wireless-secret:
-	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo mkdir -p /var/lib/secrets && sudo install -m 600 -o root /dev/null /var/lib/secrets/wireless-env'
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo mkdir -p /var/lib/secrets'
 	scp -P$(PORT) $(SSH_OPTIONS) secrets/wireless-env $(REMOTE_USER)@$(ADDR):/tmp/wireless-env
-	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo mv /tmp/wireless-env /var/lib/secrets/wireless-env && sudo chmod 600 /var/lib/secrets/wireless-env'
+	$(SSH) $(REMOTE_USER)@$(ADDR) 'sudo install -m 640 -o root -g wpa_supplicant /tmp/wireless-env /var/lib/secrets/wireless-env && rm -f /tmp/wireless-env && sudo systemctl restart wpa_supplicant'
 
 # Copy Tailscale auth key to Pi (run once; rotate every 90 days)
 tailscale-authkey:
@@ -217,7 +218,7 @@ reconcile:
 # Requires: GITHUB_TOKEN env var with repo write access
 # Creates deploy key in GitHub, installs Flux controllers, commits flux-system/ manifests
 flux-bootstrap:
-	$(SSH) $(REMOTE_USER)@$(ADDR) ' \
+	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
 		GITHUB_TOKEN=$(GITHUB_TOKEN) \
 		KUBECONFIG=$(KUBECONFIG) \
 		flux bootstrap github \

@@ -10,7 +10,6 @@
   };
 
   environment.systemPackages = [
-    pkgs.jujutsu
     pkgs.wget
     pkgs.curl
     pkgs.gcc
