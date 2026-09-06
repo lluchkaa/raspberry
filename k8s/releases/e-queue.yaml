@@ -4,6 +4,8 @@ metadata:
   name: e-queue
   namespace: apps
 spec:
+  # Stopped: scaled to 0, see e-queue.yaml history to re-enable.
+  replicas: 0
   # One Chromium profile has a single writer, and it lives on an RWO volume.
   strategy:
     type: Recreate
