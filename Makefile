@@ -171,7 +171,7 @@ e-queue-key:
 		rm -f /tmp/e-queue-key \
 	'
 
-secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret ghcr-secret e-queue-secret e-queue-key
+secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret
 
 temporal-db-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
