@@ -119,7 +119,7 @@ spec:
 
 ### Expose via Traefik
 
-Pick a free port (currently used: 8081 pihole, 3000 grafana, 8233 temporal, 9000 capacitor).
+Pick a free port (currently used: 8081 pihole, 3000 grafana, 8233 temporal, 9000 headlamp).
 
 Add to `k8s/releases/traefik-config.yaml` under `spec.valuesContent.ports`:
 

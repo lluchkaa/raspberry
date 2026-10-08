@@ -7,6 +7,6 @@ resources:
   - traefik-config.yaml
   - postgresql.yaml
   - temporal.yaml
-  - capacitor.yaml
+  - headlamp.yaml
   - smartass-subscriber.yaml
   - keda-scaledobjects.yaml

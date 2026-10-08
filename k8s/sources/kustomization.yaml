@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - pihole.yaml
   - temporal.yaml
-  - capacitor.yaml
+  - headlamp.yaml
   - bitnami.yaml
   - keda.yaml

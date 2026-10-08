@@ -1,0 +1,43 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: headlamp
+  namespace: apps
+spec:
+  interval: 1h
+  install:
+    timeout: 15m
+    createNamespace: true
+  upgrade:
+    timeout: 15m
+  chart:
+    spec:
+      chart: headlamp
+      sourceRef:
+        kind: HelmRepository
+        name: headlamp
+        namespace: flux-system
+      interval: 1h
+  values:
+    # Copy the Flux plugin from its image instead of the chart's pluginsManager,
+    # which runs a node sidecar doing `npx install` on every start.
+    initContainers:
+      - name: flux-plugin
+        image: ghcr.io/headlamp-k8s/headlamp-plugin-flux:v0.7.0
+        command: ["sh", "-c", "cp -r /plugins/* /headlamp/plugins/"]
+        volumeMounts:
+          - name: plugins
+            mountPath: /headlamp/plugins
+    volumeMounts:
+      - name: plugins
+        mountPath: /headlamp/plugins
+    volumes:
+      - name: plugins
+        emptyDir: {}
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi

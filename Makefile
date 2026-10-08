@@ -32,10 +32,6 @@ PIHOLE_PASSWORD ?= CHANGE_ME
 
 TEMPORAL_DB_PASSWORD ?= CHANGE_ME
 
-CAPACITOR_LICENSE_KEY       ?= CHANGE_ME
-CAPACITOR_SESSION_HASH_KEY  ?= CHANGE_ME
-CAPACITOR_SESSION_BLOCK_KEY ?= CHANGE_ME
-
 SMARTASS_TELEGRAM_BOT_TOKEN  ?= CHANGE_ME
 SMARTASS_TELEGRAM_USER_IDS   ?= CHANGE_ME
 SMARTASS_TEMPORAL_HOST       ?= temporal-frontend:7233
@@ -52,7 +48,7 @@ EQUEUE_TEMPORAL_NAMESPACE   ?= e-queue
 EQUEUE_SERVICE_ID           ?= 47
 EQUEUE_TARGET_CITY          ?= м. Львів
 
-.PHONY: build-image deploy switch copy flux-bootstrap pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret ghcr-secret e-queue-secret e-queue-key tailscale-authkey wireless-secret secrets status k3s-rotate-certs k3s-reset reconcile restart-pod hooks
+.PHONY: build-image deploy switch copy flux-bootstrap pihole-secret temporal-db-secret headlamp-token smartass-subscriber-secret ghcr-secret e-queue-secret e-queue-key tailscale-authkey wireless-secret secrets status k3s-rotate-certs k3s-reset reconcile restart-pod hooks
 
 # Build SD image inside a linux/arm64 Docker container (works from aarch64-darwin)
 # Result image lands in ./result-image/ on the host.
@@ -112,16 +108,9 @@ pihole-secret:
 			--dry-run=client -o yaml | kubectl apply -f - \
 	'
 
-capacitor-next-secret:
-	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
-		kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f - && \
-		kubectl create secret generic capacitor -n flux-system \
-			--from-literal=LICENSE_KEY="$(CAPACITOR_LICENSE_KEY)" \
-			--from-literal=SESSION_HASH_KEY="$(CAPACITOR_SESSION_HASH_KEY)" \
-			--from-literal=SESSION_BLOCK_KEY="$(CAPACITOR_SESSION_BLOCK_KEY)" \
-			--from-literal=registry.yaml="$$(printf "clusters:\n- id: in-cluster\n  name: In-cluster\n  apiServerURL: https://kubernetes.default.svc\n  certificateAuthorityFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n  serviceAccount:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token")" \
-			--dry-run=client -o yaml | kubectl apply -f -\
-	'
+# Print a login token for the Headlamp UI (port 9000)
+headlamp-token:
+	@$(SSH) $(REMOTE_USER)@$(ADDR) 'kubectl create token headlamp -n apps --duration=8760h'
 
 smartass-subscriber-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
@@ -171,7 +160,7 @@ e-queue-key:
 		rm -f /tmp/e-queue-key \
 	'
 
-secrets: pihole-secret temporal-db-secret capacitor-next-secret smartass-subscriber-secret
+secrets: pihole-secret temporal-db-secret smartass-subscriber-secret
 
 temporal-db-secret:
 	@$(SSH) $(REMOTE_USER)@$(ADDR) ' \
