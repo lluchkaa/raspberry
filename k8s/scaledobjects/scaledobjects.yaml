@@ -3,6 +3,8 @@ kind: ScaledObject
 metadata:
   name: smartass-subscriber
   namespace: apps
+  annotations:
+    autoscaling.keda.sh/paused-replicas: "0"
 spec:
   scaleTargetRef:
     name: smartass-subscriber

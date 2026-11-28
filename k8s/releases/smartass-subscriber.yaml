@@ -4,6 +4,7 @@ metadata:
   name: smartass-subscriber
   namespace: apps
 spec:
+  replicas: 0
   strategy:
     type: Recreate
   selector:

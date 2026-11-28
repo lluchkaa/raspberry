@@ -4,7 +4,7 @@ metadata:
   name: e-queue
   namespace: apps
 spec:
-  replicas: 1
+  replicas: 0
   # One Chromium profile has a single writer, and it lives on an RWO volume.
   strategy:
     type: Recreate
